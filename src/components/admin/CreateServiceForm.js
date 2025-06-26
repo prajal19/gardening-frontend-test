@@ -6,7 +6,6 @@ import { useTenant } from '../../contexts/TenantContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 
 
-
 // Helper to decode JWT and extract role
 const getUserRoleFromToken = (token) => {
   if (!token) return null;
