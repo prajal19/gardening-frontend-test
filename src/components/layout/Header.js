@@ -411,6 +411,8 @@ const Header = () => {
         return '/professional';
       case 'customer':
         return '/customers';
+        case 'superAdmin':
+        return '/super-admin';
       default:
         return '/';
     }
@@ -687,12 +689,12 @@ const Header = () => {
                   >
                     Login
                   </Link>
-                  <Link 
+                  {/* <Link 
                     href="/signup"
                     className="w-full py-2 px-4 bg-white border border-gray-300 text-gray-700 rounded-md text-center font-medium"
                   >
                     Sign Up
-                  </Link>
+                  </Link> */}
                 </div>
               )}
             </div>

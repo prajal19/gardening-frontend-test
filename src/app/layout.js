@@ -25,7 +25,7 @@ export default function RootLayout({ children }) {
           </DashboardProvider>
         </TenantProvider>
         <Toaster position="top-center" />
-        <Footer/>
+        {/* <Footer/> */}
       </body>
     </html>
   );

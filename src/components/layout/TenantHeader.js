@@ -1,13 +1,57 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useTenant } from '../../contexts/TenantContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import Link from 'next/link';
+import { 
+  User, LogOut, Settings, ChevronDown, ChevronRight 
+} from 'lucide-react';
 
 export default function TenantHeader() {
   const { tenantConfig, isLoading, error, isClient } = useTenant();
   const { userData, logout } = useDashboard();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Handle clicks outside dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const handleLogout = () => {
+    logout();
+    setShowDropdown(false);
+  };
+
+  // Helper function to get dashboard path based on role
+  const getDashboardPath = (role) => {
+    switch(role) {
+      case 'admin':
+        return '/admin';
+      case 'professional':
+        return '/professional';
+      case 'customer':
+        return '/customers';
+        case 'tenantAdmin':
+        return '/admin';
+      default:
+        return '/';
+    }
+  };
 
   // Show loading state until client-side hydration is complete
   if (!isClient || isLoading) {
@@ -160,16 +204,59 @@ export default function TenantHeader() {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {userData ? (
-              <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-700">
-                  Welcome, {userData.name}
-                </span>
-                <button
-                  onClick={logout}
-                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              <div className="relative" ref={dropdownRef}>
+                <button 
+                  onClick={toggleDropdown}
+                  className="flex items-center space-x-2 focus:outline-none p-2 rounded-full hover:bg-gray-100"
+                  aria-label="Open user menu"
                 >
-                  Logout
+                  {userData.profileImage ? (
+                    <img 
+                      src={userData.profileImage} 
+                      alt="Profile" 
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-100 text-green-600">
+                      <User className="w-4 h-4" />
+                    </div>
+                  )}
+                  <ChevronDown className="w-4 h-4 text-gray-500" />
                 </button>
+                
+                {showDropdown && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-xl py-2 z-20 border border-gray-100 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">{userData?.name || 'User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{userData.email || ''}</p>
+                    </div>
+                    
+                    <div className="py-1">
+                      <Link 
+                        href={getDashboardPath(userData?.role)} 
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <User className="w-4 h-4 mr-3 text-gray-500" />
+                        Profile
+                      </Link>
+                      <Link 
+                        href={`${getDashboardPath(userData?.role)}/settings`} 
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <Settings className="w-4 h-4 mr-3 text-gray-500" />
+                        Settings
+                      </Link>
+                      <div className="h-px bg-gray-100 my-1"></div>
+                      <button 
+                        onClick={handleLogout}
+                        className="flex items-center w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                      >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Logout
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center space-x-2">
@@ -192,4 +279,4 @@ export default function TenantHeader() {
       </div>
     </header>
   );
-} 
+}

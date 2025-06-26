@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useTenant } from '../context/TenantContext';
-import { useDashboard } from '../context/DashboardContext';
+import { useTenant } from '../../contexts/TenantContext';
+import { useDashboard } from '../../contexts/DashboardContext';
+
 
 
 // Helper to decode JWT and extract role

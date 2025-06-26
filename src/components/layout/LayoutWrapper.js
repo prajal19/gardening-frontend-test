@@ -23,7 +23,7 @@ export default function LayoutWrapper({ children }) {
 
   // Use tenant header if we have a subdomain and not in super admin area
   // Only after client-side hydration to prevent SSR mismatch
-  const shouldUseTenantHeader = isClient && subdomain && !pathname.startsWith('/super-admin');
+  const shouldUseTenantHeader = isClient && subdomain && !pathname.startsWith('/super-admin') && !pathname.startsWith('/admin');
 
   return (
     <>
@@ -31,7 +31,7 @@ export default function LayoutWrapper({ children }) {
         shouldUseTenantHeader ? <TenantHeader /> : <Header />
       )}
       {children}
-      {/* <Footer /> */}
+      <Footer />
     </>
   );
 }
