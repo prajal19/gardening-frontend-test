@@ -1,0 +1,27 @@
+# Environment Configuration Instructions
+
+## Create a .env.local file in the Booking directory
+Create a file named `.env.local` in the root of the Booking directory with the following content:
+
+```
+# API configuration
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5000
+```
+
+## Verify your backend is running
+Make sure your backend server is running at http://localhost:5000 and that it has CORS properly configured to accept requests from your frontend.
+
+## Check API prefix
+Ensure that all API requests include the correct prefix: `/api/v1/`
+
+## Restart your Next.js development server
+After creating the .env.local file, restart your Next.js development server with:
+
+```
+npm run dev
+```
+
+## Development flow
+1. Make sure backend server is running
+2. Make sure frontend is running with proper environment variables
+3. Try creating/viewing announcements with the updated URLs 
