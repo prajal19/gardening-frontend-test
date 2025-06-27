@@ -586,7 +586,7 @@ const Dashboard = () => {
         </div>
 
         {/* Recent Activity */}
-        <div className="mb-8">
+        {/* <div className="mb-8">
             <div className="bg-white p-6 rounded-lg shadow">
               <h3 className="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
               <ActivityLog activities={recentActivities} />
@@ -596,10 +596,10 @@ const Dashboard = () => {
                 </Link>
               </div>
             </div>
-        </div>
+        </div> */}
 
         {/* Data Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {appointmentStats.byStatus.length > 0 && (
             <StatusPieChart data={appointmentStats.byStatus} />
           )}
@@ -609,7 +609,7 @@ const Dashboard = () => {
          {appointmentStats.byMonth && appointmentStats.byMonth.length > 0 && (
             <MonthlyTrendChart data={appointmentStats.byMonth} />
           )}
-        </div>
+        </div> */}
 
         {/* Upcoming Appointments */}
         <div className="mb-6">

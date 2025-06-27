@@ -230,6 +230,7 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
           formattedAddress: formattedAddress,
           memberStatus: customerData.memberStatus || "Standard Member",
           avatar: customerData.avatar || "/avatar.png",
+          propertyDetails: customerData.propertyDetails || [],
           propertyDetails: customerData.propertyDetails || {
             size: "",
             features: {
@@ -530,46 +531,144 @@ const handleImageClick = (images, index = 0) => {
           </div>
 
           {/* Property Overview Card */}
-          <div className="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden">
-            <div className="bg-green-600 text-white p-4">
-              <h2 className="text-lg font-semibold flex items-center">
-                <MapPin className="mr-2" size={18} />
-                Property Overview
-              </h2>
-            </div>
-            <div className="p-4">
-              <div className="relative h-40 rounded-lg overflow-hidden mb-4">
-                <img
-                  src={placeholderImages.property}
-                  alt="Property"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-green-900/70 to-transparent flex items-end p-4">
-                  <h3 className="text-white font-medium">Primary Property</h3>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-green-600 font-medium">Address</p>
-                  {/* <p className="text-gray-700">{user.properties[0].address}</p> */}
-                </div>
-                <div className="flex justify-between">
-                  <div>
-                    <p className="text-sm text-green-600 font-medium">Size</p>
-                    {/* <p className="text-gray-700">{user.properties[0].sqft}</p> */}
+          {/* Property Overview Card */}
+<div className="bg-white rounded-xl shadow-sm border border-green-100 overflow-hidden">
+  <div className="bg-green-600 text-white p-4">
+    <h2 className="text-lg font-semibold flex items-center">
+      <MapPin className="mr-2" size={18} />
+      My Properties
+    </h2>
+  </div>
+  <div className="p-4">
+    {user.propertyDetails && user.propertyDetails.length > 0 ? (
+      <div className="space-y-6">
+        {user.propertyDetails.map((property, index) => (
+          <div key={index} className="border border-gray-100 rounded-lg overflow-hidden">
+            {/* Property Images Carousel */}
+            <div className="relative h-48 bg-gray-100">
+              {property.images && property.images.length > 0 ? (
+                <>
+                  <div className="relative h-full w-full overflow-hidden">
+                    <img
+                      src={property.images[0].url}
+                      alt={`Property ${index + 1}`}
+                      className="w-full h-full object-cover cursor-pointer"
+                      onClick={() => handleImageClick(property.images)}
+                    />
                   </div>
-                  {/* <div>
-                <p className="text-sm text-green-600 font-medium">Services</p>
-                <p className="text-gray-700">{user.properties[0].tags.length}</p>
-              </div> */}
+                  {property.images.length > 1 && (
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+                      {property.images.map((img, imgIndex) => (
+                        <button
+                          key={imgIndex}
+                          className={`h-2 w-2 rounded-full ${imgIndex === 0 ? 'bg-white' : 'bg-white bg-opacity-50'}`}
+                          aria-label={`Go to image ${imgIndex + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="h-full w-full flex items-center justify-center text-gray-400">
+                  <MapPin size={32} />
                 </div>
+              )}
+            </div>
+
+            {/* Property Details */}
+            <div className="p-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-medium text-gray-900">{property.name || `Property ${index + 1}`}</h3>
+                  {property.propertyAddress && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {[
+                        property.propertyAddress.street,
+                        property.propertyAddress.city,
+                        property.propertyAddress.state,
+                        property.propertyAddress.zipCode
+                      ].filter(Boolean).join(', ')}
+                    </p>
+                  )}
+                </div>
+                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                  {property.size ? `${property.size} sq ft` : 'Size not specified'}
+                </span>
               </div>
-              <button className="w-full mt-4 flex items-center justify-center text-green-600 hover:text-green-800 font-medium">
-                <span>View Property Details</span>
-                <ChevronRight size={18} className="ml-1" />
+
+              {/* Property Features */}
+              {property.features && (
+                <div className="mt-3">
+                  <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                    Features
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {property.features.hasGarden && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Garden
+                      </span>
+                    )}
+                    {property.features.hasSprinklerSystem && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Sprinkler System
+                      </span>
+                    )}
+                    {property.features.hasFrontYard && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Front Yard
+                      </span>
+                    )}
+                    {property.features.hasBackYard && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Back Yard
+                      </span>
+                    )}
+                    {property.features.hasTrees && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Trees
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Access Instructions */}
+              {property.accessInstructions && (
+                <div className="mt-3">
+                  <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+                    Access Instructions
+                  </h4>
+                  <p className="text-sm text-gray-600">{property.accessInstructions}</p>
+                </div>
+              )}
+
+              <button 
+                className="w-full mt-4 text-green-600 hover:text-green-800 font-medium text-sm flex items-center justify-center"
+                onClick={() => handleImageClick(property.images)}
+              >
+                <span>View All Images</span>
+                <ChevronRight size={16} className="ml-1" />
               </button>
             </div>
           </div>
+        ))}
+      </div>
+    ) : (
+      <div className="text-center py-8">
+        <div className="bg-green-100 p-4 rounded-full inline-block mb-3">
+          <MapPin className="text-green-600" size={24} />
+        </div>
+        <h3 className="text-gray-500 mb-2">No properties added yet</h3>
+        <Link 
+          href="/customers/add-property" 
+          className="text-green-600 hover:text-green-800 font-medium"
+        >
+          Add Your First Property
+        </Link>
+      </div>
+    )}
+  </div>
+</div>
         </div>
 
         {/* Recent Services Card */}

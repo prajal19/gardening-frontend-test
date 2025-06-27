@@ -160,26 +160,31 @@ const AppointmentDetailsModal = ({ appointment, onClose, onUpdate }) => {
   }, [editedAppointment.date, isEditing, dateChanged]);
 
   const fetchAvailableTimeSlots = async (date, serviceId) => {
-    setLoadingSlots(true);
-    try {
-      const headers = getAuthHeaders();
+  setLoadingSlots(true);
+  try {
+    const headers = getAuthHeaders();
+    const response = await axios.get(
+      `${API_URL}/appointments/availability?date=${date}&serviceId=${serviceId}`,
+      { headers }
+    );
 
-      const response = await axios.get(
-        `${API_URL}/appointments/availability?date=${date}&serviceId=${serviceId}`,
-        { headers }
-      );
-
-      if (response.data.success) {
-        setAvailableTimeSlots(response.data.data);
-      }
-    } catch (error) {
-      console.error("Error fetching time slots:", error);
-      toast.error("Failed to load available time slots");
-      setAvailableTimeSlots([]);
-    } finally {
-      setLoadingSlots(false);
+    if (response.data.success) {
+      // Transform the backend response to match frontend expectations
+      const transformedSlots = response.data.data.map(slot => ({
+        start: slot.startTime,
+        end: slot.endTime,
+        available: slot.available
+      }));
+      setAvailableTimeSlots(transformedSlots);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching time slots:", error);
+    toast.error("Failed to load available time slots");
+    setAvailableTimeSlots([]);
+  } finally {
+    setLoadingSlots(false);
+  }
+};
 
   // Get auth headers function
   const getAuthHeaders = (contentType = "application/json") => {
@@ -696,41 +701,41 @@ const AppointmentDetailsModal = ({ appointment, onClose, onUpdate }) => {
                         Loading available time slots...
                       </div>
                     ) : dateChanged && availableTimeSlots.length > 0 ? (
-                      <select
-                        value={editedAppointment.timeSlot?.startTime || ""}
-                        onChange={(e) => {
-                          const selectedSlot = availableTimeSlots.find(
-                            (slot) => slot.start === e.target.value
-                          );
-                          if (selectedSlot) {
-                            setEditedAppointment((prev) => ({
-                              ...prev,
-                              timeSlot: {
-                                startTime: selectedSlot.start,
-                                endTime: selectedSlot.end,
-                              },
-                            }));
-                          }
-                        }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                      >
-                        <option value="">Select a time slot</option>
-                        {availableTimeSlots.map((slot, index) => (
-                          <option
-                            key={index}
-                            value={slot.start}
-                            disabled={!slot.available}
-                            className={
-                              !slot.available
-                                ? "bg-gray-100 text-gray-400"
-                                : "bg-white text-gray-900"
-                            }
-                          >
-                            {`${slot.start} - ${slot.end}`}
-                            {!slot.available && " (Booked)"}
-                          </option>
-                        ))}
-                      </select>
+                     <select
+  value={editedAppointment.timeSlot?.startTime || ""}
+  onChange={(e) => {
+    const selectedSlot = availableTimeSlots.find(
+      (slot) => slot.start === e.target.value
+    );
+    if (selectedSlot) {
+      setEditedAppointment((prev) => ({
+        ...prev,
+        timeSlot: {
+          startTime: selectedSlot.start,
+          endTime: selectedSlot.end,
+        },
+      }));
+    }
+  }}
+  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
+>
+  <option value="">Select a time slot</option>
+  {availableTimeSlots.map((slot, index) => (
+    <option
+      key={index}
+      value={slot.start}
+      disabled={!slot.available}
+      className={
+        !slot.available
+          ? "bg-gray-100 text-gray-400"
+          : "bg-white text-gray-900"
+      }
+    >
+      {`${slot.start} - ${slot.end}`}
+      {!slot.available && " (Booked)"}
+    </option>
+  ))}
+</select>
                     ) : (
                       <div className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 p-2 bg-gray-50">
                         {appointment.timeSlot

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import apiClient from '../../lib/api/apiClient';
 import Button from '../ui/Button';
 import { useDashboard } from '../../contexts/DashboardContext';
+import { useTenant } from '../../contexts/TenantContext';
 
 const AnnouncementManager = () => {
   const [announcements, setAnnouncements] = useState([]);
@@ -18,25 +19,27 @@ const AnnouncementManager = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const { userData } = useDashboard();
+  const { tenant } = useTenant();
 
   useEffect(() => {
     fetchAnnouncements();
-  }, []);
+  }, [tenant]); // Add tenant as dependency
 
   const fetchAnnouncements = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient.get('/announcements');
-      setAnnouncements(response.data);
+      // Add tenant filter if not super admin
+      const params = {};
+      if (userData?.role !== 'superAdmin' && tenant?._id) {
+        params.tenant = tenant._id;
+      }
+
+      const response = await apiClient.get('/announcements', { params });
+      setAnnouncements(response.data.data || response.data);
     } catch (error) {
       console.error('Error fetching announcements:', error);
       setError(`Failed to fetch announcements: ${error.message}`);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-      }
     } finally {
       setLoading(false);
     }
@@ -54,11 +57,18 @@ const AnnouncementManager = () => {
     }
     
     try {
+      const dataToSend = {
+        ...formData,
+        // Add tenant ID for non-super admins
+        ...(userData.role !== 'superAdmin' && { tenant: tenant?._id })
+      };
+
       if (isEditing) {
-        await apiClient.put(`/announcements/${editId}`, formData);
+        await apiClient.put(`/announcements/${editId}`, dataToSend);
       } else {
-        await apiClient.post('/announcements', formData);
+        await apiClient.post('/announcements', dataToSend);
       }
+      
       setFormData({ title: '', message: '', status: 'inactive', displayDuration: 5 });
       setIsEditing(false);
       setEditId(null);
@@ -66,17 +76,6 @@ const AnnouncementManager = () => {
     } catch (error) {
       console.error('Error saving announcement:', error);
       setError(`Failed to save announcement: ${error.message}`);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-        console.error('Response headers:', error.response.headers);
-        
-        if (error.response.status === 401) {
-          setError('Authentication failed. Please log in again.');
-        } else if (error.response.status === 403) {
-          setError('You do not have permission to perform this action.');
-        }
-      }
     } finally {
       setLoading(false);
     }
