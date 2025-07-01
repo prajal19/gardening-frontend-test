@@ -6,6 +6,7 @@ import Link from 'next/link';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { X, Calendar, MapPin, Clock, User, Tag, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useTenant } from '../../contexts/TenantContext';
 
 const Portfolio = () => {
   const [portfolios, setPortfolios] = useState([]);
@@ -15,11 +16,17 @@ const Portfolio = () => {
   const [displayCount, setDisplayCount] = useState(6);
   const [hasMore, setHasMore] = useState(true);
   const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+  const { tenant, isLoading: tenantLoading } = useTenant();
 
   useEffect(() => {
+    if (tenantLoading || !tenant) return;
     const fetchPortfolios = async () => {
       try {
-        const response = await axios.get(`${API_URL}/portfolio`);
+        const response = await axios.get(`${API_URL}/portfolio`, {
+          headers: {
+            'X-Tenant-Subdomain': tenant.subdomain,
+          },
+        });
         
         // Transform portfolio data for display
         const formattedPortfolios = response.data.data.map(portfolio => ({
@@ -49,7 +56,7 @@ const Portfolio = () => {
     };
 
     fetchPortfolios();
-  }, []);
+  }, [tenant, tenantLoading, API_URL]);
 
   const handleLoadMore = () => {
     setDisplayCount(prev => prev + 6);
