@@ -19,6 +19,7 @@ const ServicesGrid = () => {
       try {
         const response = await apiClient.get('/services');
         const data = response.data;
+        console.log(data);
         if (Array.isArray(data.data)) {
           setServices(data.data);
         } else {
