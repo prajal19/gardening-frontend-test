@@ -126,18 +126,18 @@ export default function SuperAdminUsersPage() {
                   <td className="px-2 sm:px-4 py-2 whitespace-nowrap">{user.email}</td>
                   <td className="px-2 sm:px-4 py-2 whitespace-nowrap capitalize">{user.role}</td>
                   <td className="px-2 sm:px-4 py-2 whitespace-nowrap text-right">
-                    <button
+                    {/* <button
                       className="text-blue-600 hover:underline mr-2"
                       onClick={() => openModal("edit", user)}
                     >
                       Edit
-                    </button>
-                    <button
+                    </button> */}
+                    {/* <button
                       className="text-red-600 hover:underline"
                       onClick={() => handleDelete(user._id)}
                     >
                       Delete
-                    </button>
+                    </button> */}
                   </td>
                 </tr>
               ))}
