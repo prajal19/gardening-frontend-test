@@ -295,7 +295,31 @@ export default function TenantManagementPage() {
                       {tenant.name}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                      {tenant.subdomain}
+                      {/* Subdomain as clickable URL (strip www from main domain) */}
+                      {tenant.subdomain ? (() => {
+                        let mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
+                        if (mainDomain) {
+                          // Remove protocol and www if present
+                          mainDomain = mainDomain.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                        } else if (typeof window !== 'undefined') {
+                          const hostParts = window.location.hostname.split('.');
+                          mainDomain = hostParts.slice(-2).join('.');
+                        } else {
+                          mainDomain = 'localhost:3000';
+                        }
+                        const url = `https://${tenant.subdomain}.${mainDomain}`;
+                        return (
+                          <a
+                            href={url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline dark:text-blue-400"
+                            title={`Go to ${url}`}
+                          >
+                            {tenant.subdomain}
+                          </a>
+                        );
+                      })() : 'N/A'}
                     </td>
                     <td className="px-4 py-4 whitespace-nowrap text-sm">
                       <StatusBadge status={tenant.subscription?.status} />

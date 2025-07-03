@@ -31,7 +31,7 @@ export default function LayoutWrapper({ children }) {
         shouldUseTenantHeader ? <TenantHeader /> : <Header />
       )}
       {children}
-      <Footer />
+      {!pathname.startsWith('/super-admin') && <Footer />}
     </>
   );
 }
