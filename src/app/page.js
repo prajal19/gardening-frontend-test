@@ -14,12 +14,19 @@ function isMainDomain() {
   return host === mainDomain || host === 'localhost';
 }
 
+console.log(isMainDomain());
+console.log(process.env.NEXT_PUBLIC_MAIN_DOMAIN);
 export default function Home() {
-  const [showTenantContent, setShowTenantContent] = useState(false);
+  const [showTenantContent, setShowTenantContent] = useState(undefined);
 
   useEffect(() => {
     setShowTenantContent(!isMainDomain());
   }, []);
+
+  if (showTenantContent === undefined) {
+    // Prevent hydration mismatch: render nothing until client-side check is done
+    return null;
+  }
 
   return (
     <>
@@ -31,7 +38,7 @@ export default function Home() {
       {/* <Footer/> */}
       {!showTenantContent && (
         <div style={{ textAlign: 'center', margin: '2rem 0' }}>
-          {/* <p>Welcome to our platform. Please visit a tenant site to view services.</p> */}
+          <p>Welcome to our platform. Please visit a tenant site to view services and portfolio.</p>
         </div>
       )}
     </>
