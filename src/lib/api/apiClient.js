@@ -15,6 +15,23 @@ const extractSubdomain = () => {
   return null;
 };
 
+// Helper to check if current host is the main domain
+const isMainDomain = () => {
+  if (typeof window === 'undefined') return false;
+  const host = window.location.hostname;
+  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
+  if (!mainDomain) return false;
+  const cleanHost = host.replace(/^www\./, '');
+  const cleanMain = mainDomain.replace(/^www\./, '');
+  return (
+    cleanHost === cleanMain ||
+    host === mainDomain ||
+    host === 'www.' + cleanMain ||
+    host === 'localhost' ||
+    host.endsWith('.' + cleanMain)
+  );
+};
+
 const apiClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
 });
@@ -37,10 +54,12 @@ apiClient.interceptors.request.use(
       }
     }
 
-    // Add tenant subdomain header
+    // Add tenant subdomain header ONLY if not on main domain
     const subdomain = extractSubdomain();
-    if (subdomain) {
+    if (subdomain && !isMainDomain()) {
       config.headers['x-tenant-subdomain'] = subdomain;
+    } else {
+      delete config.headers['x-tenant-subdomain'];
     }
 
     return config;
