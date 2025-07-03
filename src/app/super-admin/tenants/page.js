@@ -26,6 +26,7 @@ export default function TenantManagementPage() {
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'createdAt', direction: 'descending' });
+  const [deleteModal, setDeleteModal] = useState({ open: false, tenant: null, input: '' });
   const router = useRouter();
 
   const fetchTenants = async () => {
@@ -103,13 +104,10 @@ export default function TenantManagementPage() {
   };
 
   const handleDeleteTenant = async (tenantId) => {
-    if (!window.confirm('Are you sure you want to delete this tenant? This action cannot be undone.')) {
-      return;
-    }
-
     try {
       await apiClient.delete(`/super-admin/tenants/${tenantId}`);
       setTenants(tenants.filter(t => t._id !== tenantId));
+      setDeleteModal({ open: false, tenant: null, input: '' });
     } catch (error) {
       console.error('❌ Error deleting tenant:', error);
       alert('Failed to delete tenant');
@@ -358,7 +356,7 @@ export default function TenantManagementPage() {
                           )}
                         </button>
                         <button
-                          onClick={() => handleDeleteTenant(tenant._id)}
+                          onClick={() => setDeleteModal({ open: true, tenant, input: '' })}
                           className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/30"
                           title="Delete"
                         >
@@ -379,6 +377,52 @@ export default function TenantManagementPage() {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && deleteModal.tenant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <h2 className="text-lg font-bold mb-2 text-gray-900 dark:text-white">Delete Tenant</h2>
+            <p className="mb-4 text-gray-700 dark:text-gray-300">
+              Are you sure you want to <span className="font-semibold text-red-600">permanently delete</span> the tenant <span className="font-semibold">{deleteModal.tenant.name}</span>?<br/>
+              This action <span className="font-semibold">cannot be undone</span>.<br/>
+              Please type <span className="font-mono bg-gray-100 dark:bg-gray-800 px-1 rounded">{deleteModal.tenant.subdomain}</span> to confirm.
+            </p>
+            <input
+              type="text"
+              className="w-full border border-gray-300 dark:border-gray-700 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-red-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              placeholder="Enter subdomain to confirm"
+              value={deleteModal.input}
+              onChange={e => setDeleteModal({ ...deleteModal, input: e.target.value })}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600"
+                onClick={() => setDeleteModal({ open: false, tenant: null, input: '' })}
+              >
+                Cancel
+              </button>
+              <button
+                className={`px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed`}
+                disabled={deleteModal.input !== deleteModal.tenant.subdomain}
+                onClick={() => handleDeleteTenant(deleteModal.tenant._id)}
+              >
+                Delete
+              </button>
+            </div>
+            <button
+              className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+              onClick={() => setDeleteModal({ open: false, tenant: null, input: '' })}
+              aria-label="Close"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
