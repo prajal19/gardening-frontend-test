@@ -11,7 +11,18 @@ function isMainDomain() {
   if (typeof window === 'undefined') return false;
   const host = window.location.hostname;
   const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
-  return host === mainDomain || host === 'localhost';
+  if (!mainDomain) return false;
+  // Remove www. from both host and mainDomain for comparison
+  const cleanHost = host.replace(/^www\./, '');
+  const cleanMain = mainDomain.replace(/^www\./, '');
+  // True if host is exactly the main domain, or www/main domain, or localhost
+  return (
+    cleanHost === cleanMain ||
+    host === mainDomain ||
+    host === 'www.' + cleanMain ||
+    host === 'localhost' ||
+    host.endsWith('.' + cleanMain)
+  );
 }
 
 console.log(isMainDomain());
