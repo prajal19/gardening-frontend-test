@@ -2,7 +2,7 @@
 import Hero from '../components/home/Hero';
 import ServicesGrid from '../components/home/ServicesGrid';
 import Testimonials from '../components/home/Testimonials';
-import Gallery from '../components/home/Gallery';
+import Portfolio from '../components/home/Gallery';
 import ContactForm from '../components/home/ContactForm';
 import Footer from '@/components/layout/Footer';
 import { useEffect, useState } from 'react';
@@ -43,7 +43,7 @@ export default function Home() {
     <>
       <Hero />
       {showTenantContent && <ServicesGrid />}
-      {showTenantContent && <Gallery />}
+      {showTenantContent && <Portfolio />}
       <Testimonials />
       <ContactForm />
       {/* <Footer/> */}
