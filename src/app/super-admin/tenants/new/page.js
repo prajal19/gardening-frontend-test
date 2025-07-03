@@ -146,15 +146,20 @@ export default function CreateNewTenantPage() {
     setError(null);
 
     try {
-      const tenantData = {
-        name: formData.businessName,
-        email: formData.contactEmail,
-        subdomain: formData.subdomain,
-        adminPassword: formData.adminPassword,
-        plan: formData.planType,
-      };
+      const form = new FormData();
+      form.append('name', formData.businessName);
+      form.append('email', formData.contactEmail);
+      form.append('subdomain', formData.subdomain);
+      form.append('adminPassword', formData.adminPassword);
+      form.append('plan', formData.planType);
+      if (formData.logo) {
+        form.append('logo', formData.logo);
+      }
+      // Add other fields as needed
 
-      const response = await apiClient.post('/super-admin/tenants', tenantData);
+      const response = await apiClient.post('/super-admin/tenants', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setCreatedTenant({
         ...response.data.data,
         adminEmail: formData.contactEmail,
