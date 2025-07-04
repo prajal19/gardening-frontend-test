@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import {usePathname, useRouter } from 'next/navigation';
 import { useTenant } from '../../contexts/TenantContext';
 import { useDashboard } from '../../contexts/DashboardContext';
 import Link from 'next/link';
@@ -11,6 +12,10 @@ import {
 export default function TenantHeader() {
   const { tenantConfig, isLoading, error, isClient } = useTenant();
   const { userData, logout } = useDashboard();
+    const [scrolled, setScrolled] = useState(false);
+     const pathname = usePathname();
+     const router = useRouter();
+     const [activeNavItem, setActiveNavItem] = useState('/');
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -32,6 +37,21 @@ export default function TenantHeader() {
     setShowDropdown(!showDropdown);
   };
 
+   useEffect(() => {
+    setActiveNavItem(pathname);
+    
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pathname]);
+
   const handleLogout = () => {
     logout();
     setShowDropdown(false);
@@ -50,6 +70,19 @@ export default function TenantHeader() {
         return '/admin';
       default:
         return '/';
+    }
+  };
+
+
+
+  const handleBookNowClick = (e) => {
+    e.preventDefault();
+    const token = userData?.token;
+    const role = userData?.role || '';
+    if (token && role === 'customer') {
+      router.push('/booking');
+    } else {
+      router.push('/login?redirect=/booking');
     }
   };
 
@@ -128,6 +161,8 @@ export default function TenantHeader() {
               </Link>
             </nav>
 
+ 
+           
             <div className="flex items-center space-x-2">
               <Link
                 href="/login"
@@ -135,12 +170,28 @@ export default function TenantHeader() {
               >
                 Login
               </Link>
-              <Link
+              {/* <Link
                 href="/signup"
                 className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
               >
                 Sign Up
-              </Link>
+              </Link> */}
+
+<div className="hidden md:block">
+                <button
+                  onClick={handleBookNowClick}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                    scrolled || pathname !== '/' 
+                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                      : 'bg-white text-green-700 hover:bg-green-50'
+                  }`}
+                >
+                  Book Now
+                </button>
+              </div>
+              
+
+              
             </div>
           </div>
         </div>
@@ -200,6 +251,22 @@ export default function TenantHeader() {
               Contact
             </Link>
           </nav>
+
+
+
+
+          <div className="hidden md:block">
+                <button
+                  onClick={handleBookNowClick}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
+                    scrolled || pathname !== '/' 
+                      ? 'bg-green-600 text-white hover:bg-green-700' 
+                      : 'bg-white text-green-700 hover:bg-green-50'
+                  }`}
+                >
+                  Book Now
+                </button>
+              </div>
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
@@ -266,12 +333,8 @@ export default function TenantHeader() {
                 >
                   Login
                 </Link>
-                <Link
-                  href="/signup"
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-                >
-                  Sign Up
-                </Link>
+                
+
               </div>
             )}
           </div>

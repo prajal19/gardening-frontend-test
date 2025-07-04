@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Extract subdomain from current host
 const extractSubdomain = () => {
-  if (process.env.NODE_ENV === 'development') return 'demogardning';
+  if (process.env.NODE_ENV === 'development') return 'gildardo-rochin';
   if (typeof window === 'undefined') return null;
   const host = window.location.hostname;
   const parts = host.split('.');

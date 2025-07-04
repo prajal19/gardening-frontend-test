@@ -1,10 +1,24 @@
-'use client'; 
-import React, { useState } from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Container from '../../components/ui/Container';
 import PageHeader from '../../components/layout/PageHeader';
+import { useTenant } from '@/contexts/TenantContext';
 
 export default function ContactPage() {
+  const { tenant, tenantConfig } = useTenant();
+  const [contactInfo, setContactInfo] = useState({
+    phone: '602-793-0597',
+    email: 'grochin2@gmail.com',
+    address: '9719 E Clinton St, Scottsdale, AZ 85260',
+    businessHours: [
+      'Monday - Friday: 7:00 AM - 5:30 PM',
+      'Saturday: 7:00 AM - 3:00 PM',
+      'Sunday: Closed'
+    ]
+  });
+  const [loading, setLoading] = useState(true);
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -20,6 +34,48 @@ export default function ContactPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [error, setError] = useState(null);
 
+  useEffect(() => {
+    const fetchTenantInfo = async () => {
+      try {
+        if (!tenant?.subdomain) {
+          setLoading(false);
+          return;
+        }
+
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/tenant/info`, {
+          headers: {
+            'X-Tenant-Subdomain': tenant.subdomain,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch tenant info');
+        }
+
+        const data = await response.json();
+        if (data.success) {
+          setContactInfo({
+            phone: data.data?.phone || tenantConfig?.businessPhone || '602-793-0597',
+            email: data.data?.email || tenantConfig?.businessEmail || 'grochin2@gmail.com',
+            address: data.data?.address || tenantConfig?.address || '9719 E Clinton St, Scottsdale, AZ 85260',
+            businessHours: data.data?.businessHours?.split('\n') || [
+              'Monday - Friday: 7:00 AM - 5:30 PM',
+              'Saturday: 7:00 AM - 3:00 PM',
+              'Sunday: Closed'
+            ]
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching tenant info:', error);
+        // Fallback to default values if API fails
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTenantInfo();
+  }, [tenant?.subdomain, tenantConfig]);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -28,7 +84,7 @@ export default function ContactPage() {
     }));
   };
 
-  const handleSubmit = async (e) => {
+   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -71,6 +127,14 @@ export default function ContactPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <Container className="py-16 text-center">
+        Loading contact information...
+      </Container>
+    );
+  }
 
   return (
     <>
@@ -260,7 +324,7 @@ export default function ContactPage() {
                 <div className="ml-3">
                   <h3 className="text-lg font-semibold text-gray-900">Office Address</h3>
                   <p className="mt-1 text-gray-700">
-                    9719 E Clinton St,<br/> Scottsdale, AZ 85260
+                    {contactInfo.address}
                   </p>
                 </div>
               </div>
@@ -274,7 +338,7 @@ export default function ContactPage() {
                 <div className="ml-3">
                   <h3 className="text-lg font-semibold text-gray-900">Phone</h3>
                   <p className="mt-1 text-gray-700">
-                    602-793-0597
+                    {contactInfo.phone}
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
                     Monday-Friday, 8am-6pm
@@ -291,7 +355,7 @@ export default function ContactPage() {
                 <div className="ml-3">
                   <h3 className="text-lg font-semibold text-gray-900">Email</h3>
                   <p className="mt-1 text-gray-700">
-                    grochin2@gmail.com
+                    {contactInfo.email}
                   </p>
                   <p className="mt-1 text-sm text-gray-500">
                     We respond within 24 hours
@@ -304,15 +368,10 @@ export default function ContactPage() {
             <div className="mt-10">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Hours of Operation</h3>
               <div className="bg-gray-50 rounded-lg p-6">
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="text-gray-700">Monday - Friday</div>
-                  <div className="text-gray-700">7:00 AM - 5:30 PM</div>
-                  
-                  <div className="text-gray-700">Saturday</div>
-                  <div className="text-gray-700">7:00 AM - 3:00 PM</div>
-                  
-                  <div className="text-gray-700">Sunday</div>
-                  <div className="text-gray-700">Closed</div>
+                <div className="space-y-2">
+                  {contactInfo.businessHours.map((hours, index) => (
+                    <div key={index} className="text-gray-700">{hours}</div>
+                  ))}
                 </div>
               </div>
             </div>
