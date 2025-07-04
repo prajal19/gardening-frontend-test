@@ -178,17 +178,13 @@ export default function TenantHeader() {
               </Link> */}
 
 <div className="hidden md:block">
-                <button
-                  onClick={handleBookNowClick}
-                  className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
-                    scrolled || pathname !== '/' 
-                      ? 'bg-green-600 text-white hover:bg-green-700' 
-                      : 'bg-white text-green-700 hover:bg-green-50'
-                  }`}
-                >
-                  Book Now
-                </button>
-              </div>
+  <button
+    onClick={handleBookNowClick}
+    className="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
+  >
+    Book Now
+  </button>
+</div>
               
 
               
@@ -255,7 +251,7 @@ export default function TenantHeader() {
 
 
 
-          <div className="hidden md:block">
+          {/* <div className="hidden md:block">
                 <button
                   onClick={handleBookNowClick}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
@@ -266,10 +262,18 @@ export default function TenantHeader() {
                 >
                   Book Now
                 </button>
-              </div>
+              </div> */}
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+           <div className="hidden md:block">
+  <button
+    onClick={handleBookNowClick}
+    className="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white hover:bg-green-700 transition-all duration-300"
+  >
+    Book Now
+  </button>
+</div>
             {userData ? (
               <div className="relative" ref={dropdownRef}>
                 <button 
