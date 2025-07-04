@@ -418,26 +418,33 @@ const handleDeleteAppointment = async (appointmentId) => {
         className="w-full mb-4 border rounded px-3 py-2"
         value={selectedDate}
         min={new Date().toISOString().split("T")[0]}
-        onChange={async (e) => {
-          const newDate = e.target.value;
-          setSelectedDate(newDate);
-          setSelectedSlot(null);
-          setRescheduleError(null);
+       onChange={async (e) => {
+  const newDate = e.target.value;
+  setSelectedDate(newDate);
+  setSelectedSlot(null);
+  setRescheduleError(null);
 
-          try {
-            const res = await axios.get(`${API_URL}/appointments/availability`, {
-              params: {
-                date: newDate,
-                serviceId: selectedAppointment.service._id,
-              },
-            });
-            if (res.data.success) {
-              setAvailableSlots(res.data.data);
-            }
-          } catch (error) {
-            console.error("Failed to fetch slots:", error);
-          }
-        }}
+  try {
+    const res = await axios.get(`${API_URL}/appointments/availability`, {
+      params: {
+        date: newDate,
+        serviceId: selectedAppointment.service._id,
+      },
+    });
+    if (res.data.success) {
+      // Transform the backend response to match frontend expectations
+      const transformedSlots = res.data.data.map(slot => ({
+        start: slot.startTime,
+        end: slot.endTime,
+        available: slot.available
+      }));
+      setAvailableSlots(transformedSlots);
+    }
+  } catch (error) {
+    console.error("Failed to fetch slots:", error);
+    setAvailableSlots([]);
+  }
+}}
       />
 
     {availableSlots.length > 0 && (

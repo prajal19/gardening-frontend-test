@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Extract subdomain from current host
 const extractSubdomain = () => {
-  if (process.env.NODE_ENV === 'development') return 'gildardo-rochin';
+  if (process.env.NODE_ENV === 'development') return 'isaac-gomes-ernandes';
   if (typeof window === 'undefined') return null;
   const host = window.location.hostname;
   const parts = host.split('.');
@@ -13,23 +13,6 @@ const extractSubdomain = () => {
     return parts[0];
   }
   return null;
-};
-
-// Helper to check if current host is the main domain
-const isMainDomain = () => {
-  if (typeof window === 'undefined') return false;
-  const host = window.location.hostname;
-  const mainDomain = process.env.NEXT_PUBLIC_MAIN_DOMAIN;
-  if (!mainDomain) return false;
-  const cleanHost = host.replace(/^www\./, '');
-  const cleanMain = mainDomain.replace(/^www\./, '');
-  return (
-    cleanHost === cleanMain ||
-    host === mainDomain ||
-    host === 'www.' + cleanMain ||
-    host === 'localhost' ||
-    host.endsWith('.' + cleanMain)
-  );
 };
 
 const apiClient = axios.create({
@@ -54,12 +37,10 @@ apiClient.interceptors.request.use(
       }
     }
 
-    // Add tenant subdomain header ONLY if not on main domain
+    // Add tenant subdomain header
     const subdomain = extractSubdomain();
-    if (subdomain && !isMainDomain()) {
+    if (subdomain) {
       config.headers['x-tenant-subdomain'] = subdomain;
-    } else {
-      delete config.headers['x-tenant-subdomain'];
     }
 
     return config;
