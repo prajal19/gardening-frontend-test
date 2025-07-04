@@ -27,6 +27,35 @@ const predefinedThemes = [
   { name: 'Modern Gray', primary: '#6c757d', secondary: '#f8f9fa' }, 
 ];
 
+const InputField = ({ label, name, type = 'text', value, onChange, error, placeholder, children, ...props }) => (
+  <div className="space-y-1">
+    <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      {label}
+    </label>
+    {children || (
+      <input
+        type={type}
+        name={name}
+        id={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+          error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-green-500'
+        }`}
+        aria-invalid={error ? "true" : "false"}
+        aria-describedby={error ? `${name}-error` : undefined}
+        {...props}
+      />
+    )}
+    {error && (
+      <p id={`${name}-error`} className="mt-1 text-xs text-red-500">
+        {error}
+      </p>
+    )}
+  </div>
+);
+
 export default function CreateNewTenantPage() {
   const router = useRouter();
   const formRef = useRef(null);
@@ -117,15 +146,20 @@ export default function CreateNewTenantPage() {
     setError(null);
 
     try {
-      const tenantData = {
-        name: formData.businessName,
-        email: formData.contactEmail,
-        subdomain: formData.subdomain,
-        adminPassword: formData.adminPassword,
-        plan: formData.planType,
-      };
+      const form = new FormData();
+      form.append('name', formData.businessName);
+      form.append('email', formData.contactEmail);
+      form.append('subdomain', formData.subdomain);
+      form.append('adminPassword', formData.adminPassword);
+      form.append('plan', formData.planType);
+      if (formData.logo) {
+        form.append('logo', formData.logo);
+      }
+      // Add other fields as needed
 
-      const response = await apiClient.post('/super-admin/tenants', tenantData);
+      const response = await apiClient.post('/super-admin/tenants', form, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setCreatedTenant({
         ...response.data.data,
         adminEmail: formData.contactEmail,
@@ -139,35 +173,6 @@ export default function CreateNewTenantPage() {
       setIsLoading(false);
     }
   };
-
-  const InputField = ({ label, name, type = 'text', value, onChange, error, placeholder, children, ...props }) => (
-    <div className="space-y-1">
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        {label}
-      </label>
-      {children || (
-        <input
-          type={type}
-          name={name}
-          id={name}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
-            error ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-green-500'
-          }`}
-          aria-invalid={error ? "true" : "false"}
-          aria-describedby={error ? `${name}-error` : undefined}
-          {...props}
-        />
-      )}
-      {error && (
-        <p id={`${name}-error`} className="mt-1 text-xs text-red-500">
-          {error}
-        </p>
-      )}
-    </div>
-  );
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">

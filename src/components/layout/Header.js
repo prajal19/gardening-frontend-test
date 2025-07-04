@@ -515,7 +515,7 @@ const Header = () => {
                 <Leaf className="w-8 h-8" />
                <div className='flex flex-col items-start gap-1'>
                  <span className="text-green-600">
-                  Gildardo Rochin
+                 Gardening 360°
                 </span>
                  <span className="text-xs text-green-700 font-medium  -mt-1">
                 Complete 360° Digital Landscaping Services
@@ -545,7 +545,7 @@ const Header = () => {
             {/* Right Side - CTA and Profile */}
             <div className="flex items-center space-x-4">
               {/* Book Now Button - Desktop */}
-              <div className="hidden md:block">
+              {/* <div className="hidden md:block">
                 <button
                   onClick={handleBookNowClick}
                   className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-300 ${
@@ -553,10 +553,10 @@ const Header = () => {
                       ? 'bg-green-600 text-white hover:bg-green-700' 
                       : 'bg-white text-green-700 hover:bg-green-50'
                   }`}
-                >
+                 >
                   Book Now
                 </button>
-              </div>
+              </div> */}
               
               {/* User Profile */}
               {!isLoading && userData && (
@@ -652,7 +652,7 @@ const Header = () => {
             <div className="flex items-center justify-between p-4 border-b border-gray-100">
               <Link href="/" className="flex items-center space-x-2 text-xl font-bold text-green-600">
                 <Leaf className="w-6 h-6" />
-                <span>Gildardo Rochin</span>
+                <span>Gardening 360°</span>
               </Link>
               <button 
                 onClick={toggleMobileMenu}
