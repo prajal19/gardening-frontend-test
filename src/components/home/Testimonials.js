@@ -40,8 +40,7 @@ const Testimonials = () => {
           <h2 className="text-4xl font-bold text-gray-900 mb-4">What Our Clients Say</h2>
           <div className="w-20 h-1 bg-green-600 mx-auto mb-6"></div>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Don't just take our word for it - hear from our satisfied customers about 
-            their experience with Gildardo Rochin.
+            Don't just take our word for it — hear from our satisfied customers about their experience with our services.
           </p>
         </div>
         

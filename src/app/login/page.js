@@ -164,7 +164,7 @@ function LoginContent() {
         >
           <div className="relative z-10">
             <h1 className="text-2xl font-bold mb-4 leading-tight">
-              Welcome Back to <span className="text-yellow-300">Gildordo Rochin</span>
+              Welcome back to your <span className="text-green-500">Green Space</span>
             </h1>
             
             <div className="bg-black bg-opacity-40 backdrop-blur-sm rounded-xl p-4 mb-6 border border-white border-opacity-20">
