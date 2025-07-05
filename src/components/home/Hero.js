@@ -6,6 +6,7 @@ import Button from '../ui/Button';
 import { useRouter } from 'next/navigation';
 import { jwtDecode } from 'jwt-decode';
 import { useDashboard } from '@/contexts/DashboardContext';
+import { useTenant } from '@/contexts/TenantContext';
 import { ArrowRight, Leaf, Calendar, Star, ChevronDown } from 'lucide-react';
 import AnnouncementBanner from '@/components/home/AnnouncementBanner';
 import { motion } from 'framer-motion';
@@ -13,6 +14,7 @@ import { AnimatePresence } from "framer-motion";
 
 const Hero = () => {
   const { userData, isLoading } = useDashboard();
+  const { tenant, getTenantApiClient } = useTenant();
   const router = useRouter();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [heroImage, setHeroImage] = useState('/images/landscaping-image.png');
@@ -36,8 +38,10 @@ const Hero = () => {
     // Fetch current hero image
     const fetchHeroImage = async () => {
       try {
-        const response = await fetch(`${API_URL}/hero-image`);
-        const data = await response.json();
+        // Use tenant-specific API client
+        const tenantApiClient = getTenantApiClient();
+        const response = await tenantApiClient.get('/hero-image');
+        const data = response.data;
         if (data.success && data.data?.url) {
           setHeroImage(data.data.url);
         }
@@ -46,8 +50,11 @@ const Hero = () => {
       }
     };
 
-    fetchHeroImage();
-  }, []);
+    // Only fetch if we have a tenant context
+    if (tenant) {
+      fetchHeroImage();
+    }
+  }, [tenant, getTenantApiClient]);
 
   const handleCreateEstimateClick = (e) => {
     e.preventDefault();
