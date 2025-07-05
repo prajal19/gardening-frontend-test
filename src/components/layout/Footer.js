@@ -190,6 +190,7 @@ import { useTenant } from '@/contexts/TenantContext';
 const Footer = () => {
   const { tenant, tenantConfig } = useTenant();
   const [contactInfo, setContactInfo] = useState({
+    businessName: '',
     phone: '602-793-0597',
     email: 'grochin2@gmail.com',
     address: '9719 E Clinton St, Scottsdale, AZ 85260',
@@ -222,6 +223,7 @@ const Footer = () => {
         const data = await response.json();
         if (data.success) {
           setContactInfo({
+            businessName: data.data?.name || tenantConfig?.name || '',
             phone: data.data?.phone || tenantConfig?.businessPhone || '602-793-0597',
             email: data.data?.email || tenantConfig?.businessEmail || 'grochin2@gmail.com',
             address: data.data?.address || tenantConfig?.address || '9719 E Clinton St, Scottsdale, AZ 85260',
@@ -259,7 +261,9 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Brand and Social Icons */}
           <div>
-            <h3 className="text-2xl font-bold mb-4 text-green-600 hover:text-green-500 transition-colors duration-300">Gildardo Rochin</h3>
+            {contactInfo.businessName && (
+              <h3 className="text-2xl font-bold mb-4 text-green-600 hover:text-green-500 transition-colors duration-300">{contactInfo.businessName}</h3>
+            )}
             <p className="text-gray-400 mb-6 hover:text-green-100 transition-colors duration-300">
               Professional landscaping services to transform your outdoor space into a beautiful and functional environment.
             </p>
@@ -412,7 +416,7 @@ const Footer = () => {
       <div className="bg-gray-950 py-4">
         <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm mb-4 md:mb-0 hover:text-green-500 transition-colors duration-300">
-            © {new Date().getFullYear()} Gildardo Rochin. All rights reserved.
+            © {new Date().getFullYear()} {contactInfo.businessName || 'Landscaping Services'}. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link href="/privacy-policy" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
