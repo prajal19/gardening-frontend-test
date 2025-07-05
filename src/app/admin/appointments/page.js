@@ -1180,10 +1180,10 @@ const CustomEvent = ({ event }) => {
           </div>
           {event.customer?.address && (
             <div className="text-xs text-white/80 truncate mt-1">
-              {`${event.customer.address.street || ""}, ${
-                event.customer.address.city || ""
-              }, ${event.customer.address.state || ""}, ${
-                event.customer.address.zipCode || ""
+              {`${event.customer.address?.street || ""}, ${
+                event.customer.address?.city || ""
+              }, ${event.customer.address?.state || ""}, ${
+                event.customer.address?.zipCode || ""
               }`.trim()}
             </div>
           )}
@@ -1416,10 +1416,10 @@ const AppointmentsPage = () => {
           "N/A",
         customerPhone: app.customer?.phone || "N/A",
         address: app.customer?.address
-          ? `${app.customer.address.street || ""}, ${
-              app.customer.address.city || ""
-            }, ${app.customer.address.state || ""}, ${
-              app.customer.address.zip || ""
+          ? `${app.customer.address?.street || ""}, ${
+              app.customer.address?.city || ""
+            }, ${app.customer.address?.state || ""}, ${
+              app.customer.address?.zipCode || ""
             }`.trim()
           : "N/A",
         serviceName: app.service?.name || "N/A",

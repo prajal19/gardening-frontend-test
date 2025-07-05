@@ -68,7 +68,7 @@ const BookingConfirmation = () => {
               Return to Home
             </Button>
           </Link>
-          <Link href="/booking">
+          <Link href="/customers">
             <Button>
               Book Another Service
             </Button>

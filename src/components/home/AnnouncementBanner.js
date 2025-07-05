@@ -16,30 +16,37 @@ const AnnouncementBanner = () => {
   useEffect(() => {
     const fetchActiveAnnouncement = async () => {
       try {
+        console.log('🔍 Fetching announcement for tenant:', tenant?.subdomain);
         // Use tenant-specific API client
         const tenantApiClient = getTenantApiClient();
         const response = await tenantApiClient.get('/announcements/active');
         
-        if (response.data) {
-          setAnnouncement(response.data);
+        console.log('📢 Announcement response:', response.data);
+        
+        if (response.data?.data) {
+          setAnnouncement(response.data.data);
           setTimeout(() => {
             setIsVisible(true);
           }, 300);
           
-          if (response.data.displayDuration) {
+          if (response.data.data.displayDuration) {
             setTimeout(() => {
               handleDismiss();
-            }, response.data.displayDuration * 1000);
+            }, response.data.data.displayDuration * 1000);
           }
+        } else {
+          console.log('❌ No active announcement found');
         }
       } catch (error) {
-        console.error('Error fetching announcement:', error);
+        console.error('❌ Error fetching announcement:', error);
       }
     };
 
     // Only fetch if we have a tenant context
     if (tenant) {
       fetchActiveAnnouncement();
+    } else {
+      console.log('⚠️ No tenant context available');
     }
   }, [tenant, getTenantApiClient]);
 

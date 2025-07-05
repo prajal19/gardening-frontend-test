@@ -583,10 +583,10 @@ const handleImageClick = (images, index = 0) => {
                   {property.propertyAddress && (
                     <p className="text-sm text-gray-600 mt-1">
                       {[
-                        property.propertyAddress.street,
-                        property.propertyAddress.city,
-                        property.propertyAddress.state,
-                        property.propertyAddress.zipCode
+                        property.propertyAddress?.street,
+                        property.propertyAddress?.city,
+                        property.propertyAddress?.state,
+                        property.propertyAddress?.zipCode
                       ].filter(Boolean).join(', ')}
                     </p>
                   )}
