@@ -423,7 +423,7 @@ const CustomerDetails = ({ onNext, onBack }) => {
                   <input
                     type="text"
                     className="w-full px-4 py-2 border rounded-md"
-                    value={currentProperty?.propertyAddress[field] || ''}
+                    value={currentProperty?.propertyAddress?.[field] || ''}
                     onChange={(e) => handlePropertyChange(
                       activePropertyIndex,
                       `propertyAddress.${field}`,

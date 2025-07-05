@@ -113,11 +113,11 @@ const CustomersPage = () => {
           customer.user.phone.toLowerCase().includes(searchLower)) ||
         (customer.address &&
           ((customer.address?.street &&
-            customer.address.street.toLowerCase().includes(searchLower)) ||
+            customer.address?.street.toLowerCase().includes(searchLower)) ||
             (customer.address?.city &&
-              customer.address.city.toLowerCase().includes(searchLower)) ||
+              customer.address?.city.toLowerCase().includes(searchLower)) ||
             (customer.address?.country &&
-              customer.address.country.toLowerCase().includes(searchLower))))
+              customer.address?.country.toLowerCase().includes(searchLower))))
       );
     })
     .sort((a, b) => {
