@@ -288,37 +288,37 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-6 hover:text-green-500 transition-colors duration-300">Our Services</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/services/palm-trimming" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Palm Trimming
                 </Link>
               </li>
               <li>
-                <Link href="/services/tree-trimming" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Tree Trimming
                 </Link>
               </li>
               <li>
-                <Link href="/services/palm-skinning" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Palm Skinning
                 </Link>
               </li>
               <li>
-                <Link href="/services/paver-grass" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Paver Grass
                 </Link>
               </li>
               <li>
-                <Link href="/services/landscape-design" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Landscape Design
                 </Link>
               </li>
               <li>
-                <Link href="/services/irrigation-systems" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="#" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Irrigation Systems
                 </Link>
@@ -331,7 +331,7 @@ const Footer = () => {
             <h4 className="text-lg font-semibold mb-6 hover:text-green-500 transition-colors duration-300">Company</h4>
             <ul className="space-y-3">
               <li>
-                <Link href="/about" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="/" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   About Us
                 </Link>
@@ -343,13 +343,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link href="/careers" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="/" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   Careers
                 </Link>
               </li>
               <li>
-                <Link href="/faq" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
+                <Link href="/" className="text-gray-400 hover:text-green-500 transition-colors duration-300 flex items-center group">
                   <span className="w-2 h-2 bg-green-600 rounded-full mr-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></span>
                   FAQ
                 </Link>
@@ -419,13 +419,13 @@ const Footer = () => {
             © {new Date().getFullYear()} {contactInfo.businessName || 'Landscaping Services'}. All rights reserved.
           </p>
           <div className="flex space-x-6">
-            <Link href="/privacy-policy" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
+            <Link href="/" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
               Privacy Policy
             </Link>
-            <Link href="/terms-of-service" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
+            <Link href="/" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
               Terms of Service
             </Link>
-            <Link href="/sitemap" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
+            <Link href="/" className="text-gray-500 hover:text-green-500 text-sm transition-colors duration-300">
               Sitemap
             </Link>
           </div>
