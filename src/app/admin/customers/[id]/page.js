@@ -181,7 +181,7 @@ const CustomerDetailsPage = ({ params }) => {
                 <div className="space-y-4">
                   <div>
                     <dt className="text-sm font-medium text-gray-500">Street</dt>
-                    <dd className="mt-1 text-sm text-gray-900">{customer.address.street}</dd>
+                    <dd className="mt-1 text-sm text-gray-900">{customer.address?.street}</dd>
                   </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">City/State/Zip</dt>

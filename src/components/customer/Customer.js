@@ -207,15 +207,15 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
           customerData.address !== null
         ) {
           const addressParts = [];
-          if (customerData.address.street)
+          if (customerData.address?.street)
             addressParts.push(customerData.address.street);
-          if (customerData.address.city)
+          if (customerData.address?.city)
             addressParts.push(customerData.address.city);
-          if (customerData.address.state)
+          if (customerData.address?.state)
             addressParts.push(customerData.address.state);
-          if (customerData.address.zipCode)
+          if (customerData.address?.zipCode)
             addressParts.push(customerData.address.zipCode);
-          if (customerData.address.country)
+          if (customerData.address?.country)
             addressParts.push(customerData.address.country);
           formattedAddress = addressParts.join(", ");
         } else if (typeof customerData.address === "string") {

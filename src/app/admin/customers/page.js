@@ -112,11 +112,11 @@ const CustomersPage = () => {
         (customer.user?.phone &&
           customer.user.phone.toLowerCase().includes(searchLower)) ||
         (customer.address &&
-          ((customer.address.street &&
+          ((customer.address?.street &&
             customer.address.street.toLowerCase().includes(searchLower)) ||
-            (customer.address.city &&
+            (customer.address?.city &&
               customer.address.city.toLowerCase().includes(searchLower)) ||
-            (customer.address.country &&
+            (customer.address?.country &&
               customer.address.country.toLowerCase().includes(searchLower))))
       );
     })
@@ -369,7 +369,7 @@ const CustomersPage = () => {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
                       {customer.address
-                        ? `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.zipCode}, ${customer.address.country}`
+                        ? `${customer.address?.street}, ${customer.address?.city}, ${customer.address?.state} ${customer.address?.zipCode}, ${customer.address?.country}`
                         : "N/A"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

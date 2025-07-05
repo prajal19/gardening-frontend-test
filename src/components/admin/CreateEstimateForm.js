@@ -355,7 +355,7 @@ const CreateEstimateForm = ({ appointmentId }) => {
                       type="text"
                       placeholder="123 Main St"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
-                      value={formData.property.address.street}
+                      value={formData.property.address?.street}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         property: {
@@ -372,7 +372,7 @@ const CreateEstimateForm = ({ appointmentId }) => {
                       type="text"
                       placeholder="New York"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
-                      value={formData.property.address.city}
+                      value={formData.property.address?.city}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         property: {
@@ -391,7 +391,7 @@ const CreateEstimateForm = ({ appointmentId }) => {
                       type="text"
                       placeholder="NY"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
-                      value={formData.property.address.state}
+                      value={formData.property.address?.state}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         property: {
@@ -408,7 +408,7 @@ const CreateEstimateForm = ({ appointmentId }) => {
                       type="text"
                       placeholder="10001"
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-sm sm:text-base"
-                      value={formData.property.address.zipCode}
+                      value={formData.property.address?.zipCode}
                       onChange={(e) => setFormData(prev => ({
                         ...prev,
                         property: {

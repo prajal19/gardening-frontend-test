@@ -270,7 +270,7 @@ useEffect(() => {
                 <input
                   type="text"
                   name="address.street"
-                  value={formData.address.street}
+                  value={formData.address?.street}
                   onChange={handleChange}
                   className="w-full p-2 border rounded focus:ring-green-500 focus:border-green-500"
                 />

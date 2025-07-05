@@ -148,7 +148,7 @@ const CreateCustomerForm = () => {
           <input
             type="text"
             name="address.street"
-            value={formData.address.street}
+            value={formData.address?.street}
             onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 sm:text-sm"
           />

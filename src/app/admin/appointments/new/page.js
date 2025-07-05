@@ -152,7 +152,7 @@ const NewAppointmentPage = () => {
               <option value="">Select a customer</option>
               {customers.map(customer => (
                 <option key={customer._id} value={customer._id}>
-                  {customer.user.name} - {customer.address.street}
+                  {customer.user.name} - {customer.address?.street}
                 </option>
               ))}
             </select>
