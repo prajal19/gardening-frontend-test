@@ -80,7 +80,7 @@ export default function TenantHeader() {
     const token = userData?.token;
     const role = userData?.role || '';
     if (token && role === 'customer') {
-      router.push('/booking');
+      router.push('/services');
     } else {
       router.push('/login?redirect=/booking');
     }
