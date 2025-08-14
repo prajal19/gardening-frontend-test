@@ -614,64 +614,64 @@ const CustomerDetails = ({ onNext, onBack }) => {
   const { userData, isLoading } = useDashboard();
   const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
- const [formData, setFormData] = useState({
-  address: {
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'USA'
-  },
-  propertyDetails: [{
-    name: 'Property 1',
-    propertyAddress: {
+  const [formData, setFormData] = useState({
+    address: {
       street: '',
       city: '',
       state: '',
       zipCode: '',
       country: 'USA'
     },
-    size: '',
-    images: [],
-    features: {
-      hasFrontYard: true,
-      hasBackYard: true,
-      hasTrees: false,
-      hasGarden: false,
-      hasSprinklerSystem: false
+    propertyDetails: [{
+      name: 'Property 1',
+      propertyAddress: {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: 'USA'
+      },
+      size: '',
+      images: [],
+      features: {
+        hasFrontYard: true,
+        hasBackYard: true,
+        hasTrees: false,
+        hasGarden: false,
+        hasSprinklerSystem: false
+      },
+      accessInstructions: ''
+    }],
+    notificationPreferences: {
+      email: true,
+      sms: false
     },
-    accessInstructions: ''
-  }],
-  notificationPreferences: {
-    email: true,
-    sms: false
-  },
-  notes: ''
-});
+    notes: ''
+  });
 
   const [customerData, setCustomerData] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activePropertyIndex, setActivePropertyIndex] = useState(0);
   const [errors, setErrors] = useState({
-  address: {
-    street: '',
-    city: '',
-    state: '',
-    zipCode: ''
-  },
-  propertyDetails: [{
-    name: '',
-    propertyAddress: {
+    address: {
       street: '',
       city: '',
       state: '',
       zipCode: ''
     },
-    size: '',
-    accessInstructions: ''
-  }]
-});
+    propertyDetails: [{
+      name: '',
+      propertyAddress: {
+        street: '',
+        city: '',
+        state: '',
+        zipCode: ''
+      },
+      size: '',
+      accessInstructions: ''
+    }]
+  });
   const [showValidationPopup, setShowValidationPopup] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
 
@@ -726,47 +726,47 @@ const CustomerDetails = ({ onNext, onBack }) => {
         accessInstructions: ''
       }];
 
-      setFormData({
-        address: {
-          street: customer.address?.street || '',
-          city: customer.address?.city || '',
-          state: customer.address?.state || '',
-          zipCode: customer.address?.zipCode || '',
-          country: customer.address?.country || 'USA'
-        },
-        propertyDetails,
-        notificationPreferences: customer.notificationPreferences || {
-          email: true,
-          sms: false
-        },
-        notes: currentBooking.notes || ''
-      });
+        setFormData({
+          address: customer.address || {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'USA'
+          },
+          propertyDetails,
+          notificationPreferences: customer.notificationPreferences || {
+            email: true,
+            sms: false
+          },
+          notes: currentBooking.notes || ''
+        });
 
-      // Initialize errors
-      const initialErrors = {
-        address: {
-          street: '',
-          city: '',
-          state: '',
-          zipCode: ''
-        },
-        propertyDetails: propertyDetails.map(() => ({
-          name: '',
-          propertyAddress: {
+        // Initialize errors for existing properties
+        const initialErrors = {
+          address: {
             street: '',
             city: '',
             state: '',
             zipCode: ''
           },
-          size: '',
-          accessInstructions: ''
-        }))
-      };
-      setErrors(initialErrors);
-    } catch (error) {
-      console.error('Failed to fetch customer details:', error);
-    }
-  };
+          propertyDetails: propertyDetails.map(() => ({
+            name: '',
+            propertyAddress: {
+              street: '',
+              city: '',
+              state: '',
+              zipCode: ''
+            },
+            size: '',
+            accessInstructions: ''
+          }))
+        };
+        setErrors(initialErrors);
+      } catch (error) {
+        console.error('Failed to fetch customer details:', error);
+      }
+    };
 
   fetchCustomerDetails();
 }, [userData, isLoading]);
@@ -821,7 +821,8 @@ const CustomerDetails = ({ onNext, onBack }) => {
         return '';
     }
   };
-const handlePropertyImageUpload = async (e) => {
+
+  const handlePropertyImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
@@ -839,16 +840,15 @@ const handlePropertyImageUpload = async (e) => {
       }
     }
 
+    const uploadFormData = new FormData();
+    files.forEach(file => uploadFormData.append('images', file));
+
     try {
       setIsUploading(true);
       setUploadProgress(0);
       
-      const propertyName = encodeURIComponent(currentProperty.name);
-      const uploadFormData = new FormData();
-      files.forEach(file => uploadFormData.append('images', file));
-
       const response = await axios.post(
-        `${API_URL}/customers/${customerData._id}/properties/${propertyName}/images`,
+        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images`,
         uploadFormData,
         {
           headers: {
@@ -864,22 +864,9 @@ const handlePropertyImageUpload = async (e) => {
         }
       );
 
-      // Get current images and new images
-      const currentImages = currentProperty.images || [];
-      const newImages = response.data.data || [];
-
-      // Filter out any duplicates based on publicId
-      const uniqueNewImages = newImages.filter(newImage => 
-        !currentImages.some(existingImage => existingImage.publicId === newImage.publicId)
-      );
-
-      // Update state with combined unique images
       setFormData(prev => {
         const updatedPropertyDetails = [...prev.propertyDetails];
-        updatedPropertyDetails[activePropertyIndex].images = [
-          ...currentImages,
-          ...uniqueNewImages
-        ];
+        updatedPropertyDetails[activePropertyIndex].images = response.data.data;
         return { ...prev, propertyDetails: updatedPropertyDetails };
       });
     } catch (error) {
@@ -890,22 +877,19 @@ const handlePropertyImageUpload = async (e) => {
     }
   };
 
-  const handleDeleteImage = async (imagePublicId) => {
+  const handleDeleteImage = async (imageId) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
 
     try {
-      // Get the property name from current property
-      const propertyName = encodeURIComponent(currentProperty.name);
-      
       await axios.delete(
-        `${API_URL}/customers/${customerData._id}/properties/${propertyName}/images/${imagePublicId}`,
+        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images/${imageId}`,
         { headers: { Authorization: `Bearer ${userData.token}` } }
       );
 
       setFormData(prev => {
         const updatedPropertyDetails = [...prev.propertyDetails];
         updatedPropertyDetails[activePropertyIndex].images = 
-          updatedPropertyDetails[activePropertyIndex].images.filter(img => img.publicId !== imagePublicId);
+          updatedPropertyDetails[activePropertyIndex].images.filter(img => img._id !== imageId);
         return { ...prev, propertyDetails: updatedPropertyDetails };
       });
     } catch (error) {
@@ -943,107 +927,108 @@ const handlePropertyImageUpload = async (e) => {
   };
 
   const handlePropertyChange = (index, field, value) => {
-    const processedValue = field === 'size' ? 
-      (value === '' ? '' : Number(value)) : 
-      value;
+  const processedValue = field === 'size' ? 
+    (value === '' ? '' : Number(value)) : 
+    value;
 
-    setFormData(prev => {
-      const updatedPropertyDetails = [...prev.propertyDetails];
-      if (field.includes('.')) {
-        const [parent, child] = field.split('.');
-        if (!updatedPropertyDetails[index][parent]) {
-          updatedPropertyDetails[index][parent] = {};
-        }
-        updatedPropertyDetails[index][parent][child] = processedValue;
-      } else {
-        updatedPropertyDetails[index][field] = processedValue;
+  setFormData(prev => {
+    const updatedPropertyDetails = [...prev.propertyDetails];
+    if (field.includes('.')) {
+      const [parent, child] = field.split('.');
+      if (!updatedPropertyDetails[index][parent]) {
+        updatedPropertyDetails[index][parent] = {};
       }
-      return { ...prev, propertyDetails: updatedPropertyDetails };
-    });
-
-    let error = '';
-    if (field.startsWith('propertyAddress.')) {
-      const addressField = field.split('.')[1];
-      error = validateField(addressField, processedValue, true);
-      setErrors(prev => {
-        const newErrors = {...prev};
-        if (!newErrors.propertyDetails[index]) {
-          newErrors.propertyDetails[index] = {
-            name: '',
-            propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-            size: '',
-            accessInstructions: ''
-          };
-        }
-        newErrors.propertyDetails[index].propertyAddress[addressField] = error;
-        return newErrors;
-      });
+      updatedPropertyDetails[index][parent][child] = processedValue;
     } else {
-      error = validateField(field, processedValue);
-      setErrors(prev => {
-        const newErrors = {...prev};
-        if (!newErrors.propertyDetails[index]) {
-          newErrors.propertyDetails[index] = {
-            name: '',
-            propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-            size: '',
-            accessInstructions: ''
-          };
-        }
-        newErrors.propertyDetails[index][field] = error;
-        return newErrors;
-      });
+      updatedPropertyDetails[index][field] = processedValue;
     }
-  };
+    return { ...prev, propertyDetails: updatedPropertyDetails };
+  });
 
-  const addNewProperty = () => {
-    setFormData(prev => ({
-      ...prev,
-      propertyDetails: [
-        ...prev.propertyDetails,
-        {
-          name: `Property ${prev.propertyDetails.length + 1}`,
-          propertyAddress: {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'USA'
-          },
-          size: '',
-          images: [],
-          features: {
-            hasFrontYard: true,
-            hasBackYard: true,
-            hasTrees: false,
-            hasGarden: false,
-            hasSprinklerSystem: false
-          },
-          accessInstructions: ''
-        }
-      ]
-    }));
-
-    setErrors(prev => ({
-      ...prev,
-      propertyDetails: [
-        ...prev.propertyDetails,
-        {
+  let error = '';
+  if (field.startsWith('propertyAddress.')) {
+    const addressField = field.split('.')[1];
+    error = validateField(addressField, processedValue, true);
+    setErrors(prev => {
+      const newErrors = {...prev};
+      if (!newErrors.propertyDetails[index]) {
+        newErrors.propertyDetails[index] = {
           name: '',
-          propertyAddress: {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: ''
-          },
+          propertyAddress: { street: '', city: '', state: '', zipCode: '' },
           size: '',
           accessInstructions: ''
-        }
-      ]
-    }));
+        };
+      }
+      newErrors.propertyDetails[index].propertyAddress[addressField] = error;
+      return newErrors;
+    });
+  } else {
+    error = validateField(field, processedValue);
+    setErrors(prev => {
+      const newErrors = {...prev};
+      if (!newErrors.propertyDetails[index]) {
+        newErrors.propertyDetails[index] = {
+          name: '',
+          propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+          size: '',
+          accessInstructions: ''
+        };
+      }
+      newErrors.propertyDetails[index][field] = error;
+      return newErrors;
+    });
+  }
+};
 
-    setActivePropertyIndex(formData.propertyDetails.length);
-  };
+ const addNewProperty = () => {
+  setFormData(prev => ({
+    ...prev,
+    propertyDetails: [
+      ...prev.propertyDetails,
+      {
+        name: `Property ${prev.propertyDetails.length + 1}`,
+        propertyAddress: {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'USA'
+        },
+        size: '',
+        images: [],
+        features: {
+          hasFrontYard: true,
+          hasBackYard: true,
+          hasTrees: false,
+          hasGarden: false,
+          hasSprinklerSystem: false
+        },
+        accessInstructions: ''
+      }
+    ]
+  }));
+
+  setErrors(prev => ({
+    ...prev,
+    propertyDetails: [
+      ...prev.propertyDetails,
+      {
+        name: '',
+        propertyAddress: {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: ''
+        },
+        size: '',
+        accessInstructions: ''
+      }
+    ]
+  }));
+
+  setActivePropertyIndex(formData.propertyDetails.length);
+};
+
 
   const removeProperty = (index) => {
     if (formData.propertyDetails.length <= 1) {
@@ -1069,120 +1054,112 @@ const handlePropertyImageUpload = async (e) => {
   };
 
   const validateForm = () => {
-  let isValid = true;
-  const newErrors = {...errors};
+    let isValid = true;
+    const newErrors = {...errors};
 
-  // Validate address fields
-  ['street', 'city', 'state', 'zipCode'].forEach(field => {
-    const error = validateField(field, formData.address?.[field] || '');
-    newErrors.address[field] = error;
-    if (error) isValid = false;
-  });
-
-  // Validate property details
-  formData.propertyDetails.forEach((property, index) => {
-    // Initialize errors object if it doesn't exist
-    if (!newErrors.propertyDetails[index]) {
-      newErrors.propertyDetails[index] = {
-        name: '',
-        propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-        size: '',
-        accessInstructions: ''
-      };
-    }
-
-    // Validate property name
-    const nameError = validateField('name', property?.name || '');
-    newErrors.propertyDetails[index].name = nameError;
-    if (nameError) isValid = false;
-
-    // Validate property address fields
     ['street', 'city', 'state', 'zipCode'].forEach(field => {
-      const addressValue = property?.propertyAddress?.[field] || '';
-      const error = validateField(field, addressValue, true);
-      newErrors.propertyDetails[index].propertyAddress[field] = error;
+      const error = validateField(field, formData.address[field]);
+      newErrors.address[field] = error;
       if (error) isValid = false;
     });
 
-    // Validate size
-    const sizeError = validateField('size', property?.size || '');
-    newErrors.propertyDetails[index].size = sizeError;
-    if (sizeError) isValid = false;
+    formData.propertyDetails.forEach((property, index) => {
+      const nameError = validateField('name', property.name);
+      newErrors.propertyDetails[index].name = nameError;
+      if (nameError) isValid = false;
 
-    // Validate access instructions
-    const accessError = validateField('accessInstructions', property?.accessInstructions || '');
-    newErrors.propertyDetails[index].accessInstructions = accessError;
-    if (accessError) isValid = false;
-  });
+      ['street', 'city', 'state', 'zipCode'].forEach(field => {
+        const error = validateField(field, property.propertyAddress[field], true);
+        newErrors.propertyDetails[index].propertyAddress[field] = error;
+        if (error) isValid = false;
+      });
 
-  setErrors(newErrors);
-  return isValid;
-};
+      const sizeError = validateField('size', property.size);
+      newErrors.propertyDetails[index].size = sizeError;
+      if (sizeError) isValid = false;
+
+      const accessError = validateField('accessInstructions', property.accessInstructions);
+      newErrors.propertyDetails[index].accessInstructions = accessError;
+      if (accessError) isValid = false;
+    });
+
+    setErrors(newErrors);
+    return isValid;
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  
+  if (!validateForm()) {
+    showErrorPopup('Please fix all validation errors before submitting');
+    return;
+  }
+
+  try {
+    // Create a clean data object without any undefined values
+    const dataToSend = {
+      address: {
+        street: formData.address.street || '',
+        city: formData.address.city || '',
+        state: formData.address.state || '',
+        zipCode: formData.address.zipCode || '',
+        country: formData.address.country || 'USA'
+      },
+      propertyDetails: formData.propertyDetails.map(property => ({
+        name: property.name || '',
+        propertyAddress: {
+          street: property.propertyAddress.street || '',
+          city: property.propertyAddress.city || '',
+          state: property.propertyAddress.state || '',
+          zipCode: property.propertyAddress.zipCode || '',
+          country: property.propertyAddress.country || 'USA'
+        },
+        size: property.size || 0,
+        images: property.images || [],
+        features: {
+          hasFrontYard: property.features?.hasFrontYard ?? true,
+          hasBackYard: property.features?.hasBackYard ?? true,
+          hasTrees: property.features?.hasTrees ?? false,
+          hasGarden: property.features?.hasGarden ?? false,
+          hasSprinklerSystem: property.features?.hasSprinklerSystem ?? false
+        },
+        accessInstructions: property.accessInstructions || ''
+      })),
+      notificationPreferences: {
+        email: formData.notificationPreferences.email ?? true,
+        sms: formData.notificationPreferences.sms ?? false
+      },
+      notes: formData.notes || ''
+    };
+
+    await axios.put(
+      `${API_URL}/customers/me`,
+      dataToSend,
+      { headers: { Authorization: `Bearer ${userData.token}` } }
+    );
+
+    updateCurrentBooking({
+      ...currentBooking,
+      propertyDetails: formData.propertyDetails,
+      notes: formData.notes
+    });
     
-    if (!validateForm()) {
-      showErrorPopup('Please fix all validation errors before submitting');
-      return;
-    }
-
-    try {
-      const dataToSend = {
-        address: formData.address,
-        propertyDetails: formData.propertyDetails,
-        notificationPreferences: formData.notificationPreferences,
-        notes: formData.notes
-      };
-
-      await axios.put(
-        `${API_URL}/customers/me`,
-        dataToSend,
-        { headers: { Authorization: `Bearer ${userData.token}` } }
-      );
-
-      updateCurrentBooking({
-        ...currentBooking,
-        propertyDetails: formData.propertyDetails,
-        notes: formData.notes
-      });
-      
-      onNext();
-    } catch (error) {
-      console.error('Failed to save customer details:', error);
-      showErrorPopup('Failed to save details. Please try again.');
-    }
-  };
+    onNext();
+  } catch (error) {
+    console.error('Failed to save customer details:', error);
+    showErrorPopup('Failed to save details. Please try again.');
+  }
+};
 
   if (!customerData) return <div>Loading...</div>;
 
-  const currentProperty = formData.propertyDetails[activePropertyIndex] || {
-  name: '',
-  propertyAddress: {
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'USA'
-  },
-  size: '',
-  images: [],
-  features: {
-    hasFrontYard: true,
-    hasBackYard: true,
-    hasTrees: false,
-    hasGarden: false,
-    hasSprinklerSystem: false
-  },
-  accessInstructions: ''
-};
-
-const currentErrors = errors.propertyDetails[activePropertyIndex] || {
-  name: '',
-  propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-  size: '',
-  accessInstructions: ''
-};
+  const currentProperty = formData.propertyDetails[activePropertyIndex];
+  const currentErrors = errors.propertyDetails[activePropertyIndex] || {
+    name: '',
+    propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+    size: '',
+    accessInstructions: ''
+  };
 
   return (
     <div className="py-8 relative">
@@ -1422,38 +1399,38 @@ const currentErrors = errors.propertyDetails[activePropertyIndex] || {
               </div>
 
               {/* Current Images Gallery */}
-               {currentProperty?.images?.length > 0 && (
-        <div className="mt-4">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {currentProperty?.images.map((image) => (
-              <div key={image.publicId || image.url} className="relative group">
-                <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
-                  <img 
-                    src={image.url}
-                    alt="Property" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null; 
-                      e.target.src = '/placeholder-image.jpg';
-                    }}
-                  />
+              {currentProperty?.images?.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {currentProperty?.images.map((image) => (
+                      <div key={image._id || image.url} className="relative group">
+                        <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+                          <img 
+                            src={image.url}
+                            alt="Property" 
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.onerror = null; 
+                              e.target.src = '/placeholder-image.jpg';
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteImage(image._id)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          aria-label="Delete image"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteImage(image.publicId)}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Delete image"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Access Instructions</label>
