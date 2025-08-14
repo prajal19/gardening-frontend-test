@@ -614,144 +614,162 @@ const CustomerDetails = ({ onNext, onBack }) => {
   const { userData, isLoading } = useDashboard();
   const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-  const [formData, setFormData] = useState({
-    address: {
+ const [formData, setFormData] = useState({
+  address: {
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA'
+  },
+  propertyDetails: [{
+    name: 'Property 1',
+    propertyAddress: {
       street: '',
       city: '',
       state: '',
       zipCode: '',
       country: 'USA'
     },
-    propertyDetails: [{
-      name: 'Property 1',
-      propertyAddress: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: 'USA'
-      },
-      size: '',
-      images: [],
-      features: {
-        hasFrontYard: true,
-        hasBackYard: true,
-        hasTrees: false,
-        hasGarden: false,
-        hasSprinklerSystem: false
-      },
-      accessInstructions: ''
-    }],
-    notificationPreferences: {
-      email: true,
-      sms: false
+    size: '',
+    images: [],
+    features: {
+      hasFrontYard: true,
+      hasBackYard: true,
+      hasTrees: false,
+      hasGarden: false,
+      hasSprinklerSystem: false
     },
-    notes: ''
-  });
+    accessInstructions: ''
+  }],
+  notificationPreferences: {
+    email: true,
+    sms: false
+  },
+  notes: ''
+});
 
   const [customerData, setCustomerData] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activePropertyIndex, setActivePropertyIndex] = useState(0);
   const [errors, setErrors] = useState({
-    address: {
+  address: {
+    street: '',
+    city: '',
+    state: '',
+    zipCode: ''
+  },
+  propertyDetails: [{
+    name: '',
+    propertyAddress: {
       street: '',
       city: '',
       state: '',
       zipCode: ''
     },
-    propertyDetails: [{
-      name: '',
-      propertyAddress: {
-        street: '',
-        city: '',
-        state: '',
-        zipCode: ''
-      },
-      size: '',
-      accessInstructions: ''
-    }]
-  });
+    size: '',
+    accessInstructions: ''
+  }]
+});
   const [showValidationPopup, setShowValidationPopup] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
 
-  useEffect(() => {
-    if (isLoading || !userData?.token) return;
+ useEffect(() => {
+  if (isLoading || !userData?.token) return;
 
-    const fetchCustomerDetails = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/customers/me`, {
-          headers: { Authorization: `Bearer ${userData.token}` }
-        });
-        const customer = response.data.data;
-        setCustomerData(customer);
-        
-        const propertyDetails = customer.propertyDetails || [{
-          name: 'Property 1',
+  const fetchCustomerDetails = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/customers/me`, {
+        headers: { Authorization: `Bearer ${userData.token}` }
+      });
+      const customer = response.data.data;
+      setCustomerData(customer);
+      
+      const propertyDetails = customer.propertyDetails?.map(p => ({
+        name: p.name || `Property ${index + 1}`,
+        propertyAddress: {
+          street: p.propertyAddress?.street || '',
+          city: p.propertyAddress?.city || '',
+          state: p.propertyAddress?.state || '',
+          zipCode: p.propertyAddress?.zipCode || '',
+          country: p.propertyAddress?.country || 'USA'
+        },
+        size: p.size || '',
+        images: p.images || [],
+        features: {
+          hasFrontYard: p.features?.hasFrontYard ?? true,
+          hasBackYard: p.features?.hasBackYard ?? true,
+          hasTrees: p.features?.hasTrees ?? false,
+          hasGarden: p.features?.hasGarden ?? false,
+          hasSprinklerSystem: p.features?.hasSprinklerSystem ?? false
+        },
+        accessInstructions: p.accessInstructions || ''
+      })) || [{
+        name: 'Property 1',
+        propertyAddress: {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: '',
+          country: 'USA'
+        },
+        size: '',
+        images: [],
+        features: {
+          hasFrontYard: true,
+          hasBackYard: true,
+          hasTrees: false,
+          hasGarden: false,
+          hasSprinklerSystem: false
+        },
+        accessInstructions: ''
+      }];
+
+      setFormData({
+        address: {
+          street: customer.address?.street || '',
+          city: customer.address?.city || '',
+          state: customer.address?.state || '',
+          zipCode: customer.address?.zipCode || '',
+          country: customer.address?.country || 'USA'
+        },
+        propertyDetails,
+        notificationPreferences: customer.notificationPreferences || {
+          email: true,
+          sms: false
+        },
+        notes: currentBooking.notes || ''
+      });
+
+      // Initialize errors
+      const initialErrors = {
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          zipCode: ''
+        },
+        propertyDetails: propertyDetails.map(() => ({
+          name: '',
           propertyAddress: {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'USA'
-          },
-          size: '',
-          images: [],
-          features: {
-            hasFrontYard: true,
-            hasBackYard: true,
-            hasTrees: false,
-            hasGarden: false,
-            hasSprinklerSystem: false
-          },
-          accessInstructions: ''
-        }];
-
-        setFormData({
-          address: customer.address || {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: '',
-            country: 'USA'
-          },
-          propertyDetails,
-          notificationPreferences: customer.notificationPreferences || {
-            email: true,
-            sms: false
-          },
-          notes: currentBooking.notes || ''
-        });
-
-        // Initialize errors for existing properties
-        const initialErrors = {
-          address: {
             street: '',
             city: '',
             state: '',
             zipCode: ''
           },
-          propertyDetails: propertyDetails.map(() => ({
-            name: '',
-            propertyAddress: {
-              street: '',
-              city: '',
-              state: '',
-              zipCode: ''
-            },
-            size: '',
-            accessInstructions: ''
-          }))
-        };
-        setErrors(initialErrors);
-      } catch (error) {
-        console.error('Failed to fetch customer details:', error);
-      }
-    };
+          size: '',
+          accessInstructions: ''
+        }))
+      };
+      setErrors(initialErrors);
+    } catch (error) {
+      console.error('Failed to fetch customer details:', error);
+    }
+  };
 
-    fetchCustomerDetails();
-  }, [userData, isLoading]);
-
+  fetchCustomerDetails();
+}, [userData, isLoading]);
   const showErrorPopup = (message) => {
     setValidationMessage(message);
     setShowValidationPopup(true);
@@ -803,8 +821,7 @@ const CustomerDetails = ({ onNext, onBack }) => {
         return '';
     }
   };
-
-  const handlePropertyImageUpload = async (e) => {
+const handlePropertyImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (!files.length) return;
 
@@ -822,15 +839,16 @@ const CustomerDetails = ({ onNext, onBack }) => {
       }
     }
 
-    const uploadFormData = new FormData();
-    files.forEach(file => uploadFormData.append('images', file));
-
     try {
       setIsUploading(true);
       setUploadProgress(0);
       
+      const propertyName = encodeURIComponent(currentProperty.name);
+      const uploadFormData = new FormData();
+      files.forEach(file => uploadFormData.append('images', file));
+
       const response = await axios.post(
-        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images`,
+        `${API_URL}/customers/${customerData._id}/properties/${propertyName}/images`,
         uploadFormData,
         {
           headers: {
@@ -846,9 +864,22 @@ const CustomerDetails = ({ onNext, onBack }) => {
         }
       );
 
+      // Get current images and new images
+      const currentImages = currentProperty.images || [];
+      const newImages = response.data.data || [];
+
+      // Filter out any duplicates based on publicId
+      const uniqueNewImages = newImages.filter(newImage => 
+        !currentImages.some(existingImage => existingImage.publicId === newImage.publicId)
+      );
+
+      // Update state with combined unique images
       setFormData(prev => {
         const updatedPropertyDetails = [...prev.propertyDetails];
-        updatedPropertyDetails[activePropertyIndex].images = response.data.data;
+        updatedPropertyDetails[activePropertyIndex].images = [
+          ...currentImages,
+          ...uniqueNewImages
+        ];
         return { ...prev, propertyDetails: updatedPropertyDetails };
       });
     } catch (error) {
@@ -859,19 +890,22 @@ const CustomerDetails = ({ onNext, onBack }) => {
     }
   };
 
-  const handleDeleteImage = async (imageId) => {
+  const handleDeleteImage = async (imagePublicId) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
 
     try {
+      // Get the property name from current property
+      const propertyName = encodeURIComponent(currentProperty.name);
+      
       await axios.delete(
-        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images/${imageId}`,
+        `${API_URL}/customers/${customerData._id}/properties/${propertyName}/images/${imagePublicId}`,
         { headers: { Authorization: `Bearer ${userData.token}` } }
       );
 
       setFormData(prev => {
         const updatedPropertyDetails = [...prev.propertyDetails];
         updatedPropertyDetails[activePropertyIndex].images = 
-          updatedPropertyDetails[activePropertyIndex].images.filter(img => img._id !== imageId);
+          updatedPropertyDetails[activePropertyIndex].images.filter(img => img.publicId !== imagePublicId);
         return { ...prev, propertyDetails: updatedPropertyDetails };
       });
     } catch (error) {
@@ -1035,38 +1069,55 @@ const CustomerDetails = ({ onNext, onBack }) => {
   };
 
   const validateForm = () => {
-    let isValid = true;
-    const newErrors = {...errors};
+  let isValid = true;
+  const newErrors = {...errors};
 
+  // Validate address fields
+  ['street', 'city', 'state', 'zipCode'].forEach(field => {
+    const error = validateField(field, formData.address?.[field] || '');
+    newErrors.address[field] = error;
+    if (error) isValid = false;
+  });
+
+  // Validate property details
+  formData.propertyDetails.forEach((property, index) => {
+    // Initialize errors object if it doesn't exist
+    if (!newErrors.propertyDetails[index]) {
+      newErrors.propertyDetails[index] = {
+        name: '',
+        propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+        size: '',
+        accessInstructions: ''
+      };
+    }
+
+    // Validate property name
+    const nameError = validateField('name', property?.name || '');
+    newErrors.propertyDetails[index].name = nameError;
+    if (nameError) isValid = false;
+
+    // Validate property address fields
     ['street', 'city', 'state', 'zipCode'].forEach(field => {
-      const error = validateField(field, formData.address[field]);
-      newErrors.address[field] = error;
+      const addressValue = property?.propertyAddress?.[field] || '';
+      const error = validateField(field, addressValue, true);
+      newErrors.propertyDetails[index].propertyAddress[field] = error;
       if (error) isValid = false;
     });
 
-    formData.propertyDetails.forEach((property, index) => {
-      const nameError = validateField('name', property.name);
-      newErrors.propertyDetails[index].name = nameError;
-      if (nameError) isValid = false;
+    // Validate size
+    const sizeError = validateField('size', property?.size || '');
+    newErrors.propertyDetails[index].size = sizeError;
+    if (sizeError) isValid = false;
 
-      ['street', 'city', 'state', 'zipCode'].forEach(field => {
-        const error = validateField(field, property.propertyAddress[field], true);
-        newErrors.propertyDetails[index].propertyAddress[field] = error;
-        if (error) isValid = false;
-      });
+    // Validate access instructions
+    const accessError = validateField('accessInstructions', property?.accessInstructions || '');
+    newErrors.propertyDetails[index].accessInstructions = accessError;
+    if (accessError) isValid = false;
+  });
 
-      const sizeError = validateField('size', property.size);
-      newErrors.propertyDetails[index].size = sizeError;
-      if (sizeError) isValid = false;
-
-      const accessError = validateField('accessInstructions', property.accessInstructions);
-      newErrors.propertyDetails[index].accessInstructions = accessError;
-      if (accessError) isValid = false;
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
+  setErrors(newErrors);
+  return isValid;
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -1105,13 +1156,33 @@ const CustomerDetails = ({ onNext, onBack }) => {
 
   if (!customerData) return <div>Loading...</div>;
 
-  const currentProperty = formData.propertyDetails[activePropertyIndex];
-  const currentErrors = errors.propertyDetails[activePropertyIndex] || {
-    name: '',
-    propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-    size: '',
-    accessInstructions: ''
-  };
+  const currentProperty = formData.propertyDetails[activePropertyIndex] || {
+  name: '',
+  propertyAddress: {
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA'
+  },
+  size: '',
+  images: [],
+  features: {
+    hasFrontYard: true,
+    hasBackYard: true,
+    hasTrees: false,
+    hasGarden: false,
+    hasSprinklerSystem: false
+  },
+  accessInstructions: ''
+};
+
+const currentErrors = errors.propertyDetails[activePropertyIndex] || {
+  name: '',
+  propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+  size: '',
+  accessInstructions: ''
+};
 
   return (
     <div className="py-8 relative">
@@ -1351,38 +1422,38 @@ const CustomerDetails = ({ onNext, onBack }) => {
               </div>
 
               {/* Current Images Gallery */}
-              {currentProperty?.images?.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {currentProperty?.images.map((image) => (
-                      <div key={image._id || image.url} className="relative group">
-                        <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
-                          <img 
-                            src={image.url}
-                            alt="Property" 
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              e.target.onerror = null; 
-                              e.target.src = '/placeholder-image.jpg';
-                            }}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteImage(image._id)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                          aria-label="Delete image"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+               {currentProperty?.images?.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {currentProperty?.images.map((image) => (
+              <div key={image.publicId || image.url} className="relative group">
+                <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
+                  <img 
+                    src={image.url}
+                    alt="Property" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null; 
+                      e.target.src = '/placeholder-image.jpg';
+                    }}
+                  />
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => handleDeleteImage(image.publicId)}
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Delete image"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Access Instructions</label>
