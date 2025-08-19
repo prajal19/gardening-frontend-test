@@ -622,25 +622,34 @@ const CustomerDetails = ({ onNext, onBack }) => {
       zipCode: '',
       country: 'USA'
     },
-    propertyDetails: [{
+    properties: [{
       name: 'Property 1',
-      propertyAddress: {
+      address: {
         street: '',
         city: '',
         state: '',
         zipCode: '',
         country: 'USA'
       },
-      size: '',
-      images: [],
+      size: {
+        value: '',
+        unit: 'sqft'
+      },
+      propertyType: 'residential',
       features: {
         hasFrontYard: true,
         hasBackYard: true,
         hasTrees: false,
         hasGarden: false,
-        hasSprinklerSystem: false
+        hasSprinklerSystem: false,
+        // hasPool: false,
+        // hasDeck: false,
+        // hasPatio: false,
+        // hasFence: false,
+        // hasIrrigation: false
       },
-      accessInstructions: ''
+      accessInstructions: '',
+      specialRequirements: ''
     }],
     notificationPreferences: {
       email: true,
@@ -650,6 +659,7 @@ const CustomerDetails = ({ onNext, onBack }) => {
   });
 
   const [customerData, setCustomerData] = useState(null);
+  const [properties, setProperties] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [activePropertyIndex, setActivePropertyIndex] = useState(0);
@@ -660,81 +670,114 @@ const CustomerDetails = ({ onNext, onBack }) => {
       state: '',
       zipCode: ''
     },
-    propertyDetails: [{
+    properties: [{
       name: '',
-      propertyAddress: {
+      address: {
         street: '',
         city: '',
         state: '',
         zipCode: ''
       },
       size: '',
-      accessInstructions: ''
+      accessInstructions: '',
+      specialRequirements: ''
     }]
   });
   const [showValidationPopup, setShowValidationPopup] = useState(false);
   const [validationMessage, setValidationMessage] = useState('');
 
- useEffect(() => {
-  if (isLoading || !userData?.token) return;
+  useEffect(() => {
+    if (isLoading || !userData?.token) return;
 
-  const fetchCustomerDetails = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/customers/me`, {
-        headers: { Authorization: `Bearer ${userData.token}` }
-      });
-      const customer = response.data.data;
-      setCustomerData(customer);
-      
-      const propertyDetails = customer.propertyDetails?.map(p => ({
-        name: p.name || `Property ${index + 1}`,
-        propertyAddress: {
-          street: p.propertyAddress?.street || '',
-          city: p.propertyAddress?.city || '',
-          state: p.propertyAddress?.state || '',
-          zipCode: p.propertyAddress?.zipCode || '',
-          country: p.propertyAddress?.country || 'USA'
-        },
-        size: p.size || '',
-        images: p.images || [],
-        features: {
-          hasFrontYard: p.features?.hasFrontYard ?? true,
-          hasBackYard: p.features?.hasBackYard ?? true,
-          hasTrees: p.features?.hasTrees ?? false,
-          hasGarden: p.features?.hasGarden ?? false,
-          hasSprinklerSystem: p.features?.hasSprinklerSystem ?? false
-        },
-        accessInstructions: p.accessInstructions || ''
-      })) || [{
-        name: 'Property 1',
-        propertyAddress: {
-          street: '',
-          city: '',
-          state: '',
-          zipCode: '',
-          country: 'USA'
-        },
-        size: '',
-        images: [],
-        features: {
-          hasFrontYard: true,
-          hasBackYard: true,
-          hasTrees: false,
-          hasGarden: false,
-          hasSprinklerSystem: false
-        },
-        accessInstructions: ''
-      }];
-
-        setFormData({
-          address: customer.address || {
+    const fetchCustomerDetails = async () => {
+      try {
+        // Fetch customer details
+        const customerResponse = await axios.get(`${API_URL}/customers/me`, {
+          headers: { Authorization: `Bearer ${userData.token}` }
+        });
+        console.log('Customer API Response:', customerResponse.data); 
+        const customer = customerResponse.data.data;
+        setCustomerData(customer);
+        
+        // Fetch properties
+        const propertiesResponse = await axios.get(`${API_URL}/properties`, {
+          headers: { Authorization: `Bearer ${userData.token}` }
+        });
+        const fetchedProperties = propertiesResponse.data.data;
+        setProperties(fetchedProperties);
+        
+        // Map properties to form data
+        const mappedProperties = fetchedProperties.length > 0 ? fetchedProperties.map(property => ({
+          _id: property._id,
+          name: property.name,
+          address: {
+            street: property.address?.street || '',
+            city: property.address?.city || '',
+            state: property.address?.state || '',
+            zipCode: property.address?.zipCode || '',
+            country: property.address?.country || 'USA'
+          },
+          size: {
+            value: property.size?.value || '',
+            unit: property.size?.unit || 'sqft'
+          },
+          propertyType: property.propertyType || 'residential',
+          images: property.images || [],
+         features: {
+    hasFrontYard: property.features?.hasFrontYard !== undefined ? property.features.hasFrontYard : true,
+    hasBackYard: property.features?.hasBackYard !== undefined ? property.features.hasBackYard : true,
+    hasTrees: property.features?.hasTrees !== undefined ? property.features.hasTrees : false,
+    hasGarden: property.features?.hasGarden !== undefined ? property.features.hasGarden : false,
+    hasSprinklerSystem: property.features?.hasSprinklerSystem !== undefined ? property.features.hasSprinklerSystem : false
+  
+            // hasPool: property.features?.hasPool ?? false,
+            // hasDeck: property.features?.hasDeck ?? false,
+            // hasPatio: property.features?.hasPatio ?? false,
+            // hasFence: property.features?.hasFence ?? false,
+            // hasIrrigation: property.features?.hasIrrigation ?? false
+          },
+          accessInstructions: property.accessInstructions || '',
+          specialRequirements: property.specialRequirements || ''
+        })) : [{
+          name: 'Property 1',
+          address: {
             street: '',
             city: '',
             state: '',
             zipCode: '',
             country: 'USA'
           },
-          propertyDetails,
+          size: {
+            value: '',
+            unit: 'sqft'
+          },
+          propertyType: 'residential',
+          images: [],
+          features: {
+            hasFrontYard: true,
+            hasBackYard: true,
+            hasTrees: false,
+            hasGarden: false,
+            hasSprinklerSystem: false,
+            // hasPool: false,
+            // hasDeck: false,
+            // hasPatio: false,
+            // hasFence: false,
+            // hasIrrigation: false
+          },
+          accessInstructions: '',
+          specialRequirements: ''
+        }];
+
+        setFormData({
+        address: {
+    street: customer.address?.street || '',
+    city: customer.address?.city || '',
+    state: customer.address?.state || '',
+    zipCode: customer.address?.zipCode || '',
+    country: customer.address?.country || 'USA'
+  },
+          properties: mappedProperties,
           notificationPreferences: customer.notificationPreferences || {
             email: true,
             sms: false
@@ -742,7 +785,6 @@ const CustomerDetails = ({ onNext, onBack }) => {
           notes: currentBooking.notes || ''
         });
 
-        // Initialize errors for existing properties
         const initialErrors = {
           address: {
             street: '',
@@ -750,16 +792,17 @@ const CustomerDetails = ({ onNext, onBack }) => {
             state: '',
             zipCode: ''
           },
-          propertyDetails: propertyDetails.map(() => ({
+          properties: mappedProperties.map(() => ({
             name: '',
-            propertyAddress: {
+            address: {
               street: '',
               city: '',
               state: '',
               zipCode: ''
             },
             size: '',
-            accessInstructions: ''
+            accessInstructions: '',
+            specialRequirements: ''
           }))
         };
         setErrors(initialErrors);
@@ -768,14 +811,15 @@ const CustomerDetails = ({ onNext, onBack }) => {
       }
     };
 
-  fetchCustomerDetails();
-}, [userData, isLoading]);
+    fetchCustomerDetails();
+  }, [userData, isLoading]);
+
   const showErrorPopup = (message) => {
     setValidationMessage(message);
     setShowValidationPopup(true);
     setTimeout(() => {
       setShowValidationPopup(false);
-    }, 5000); // Hide after 5 seconds
+    }, 5000);
   };
 
   const validateField = (field, value, isPropertyAddress = false) => {
@@ -812,85 +856,118 @@ const CustomerDetails = ({ onNext, onBack }) => {
       case 'name':
         if (stringValue.trim() === '') return 'Property name is required';
         if (stringValue.length < 2) return 'Property name is too short';
-        if (stringValue.length > 50) return 'Property name is too long';
+        if (stringValue.length > 100) return 'Property name is too long';
         return '';
       case 'accessInstructions':
         if (stringValue.length > 500) return 'Instructions cannot exceed 500 characters';
+        return '';
+      case 'specialRequirements':
+        if (stringValue.length > 1000) return 'Special requirements cannot exceed 1000 characters';
         return '';
       default:
         return '';
     }
   };
 
-  const handlePropertyImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
+ const handlePropertyImageUpload = async (e) => {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
+  const validTypes = ['image/jpeg', 'image/png', 'image/gif'];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  
+  for (const file of files) {
+    if (!validTypes.includes(file.type)) {
+      showErrorPopup('Only JPG, PNG, and GIF images are allowed');
+      return;
+    }
+    if (file.size > maxSize) {
+      showErrorPopup('Image size must be less than 10MB');
+      return;
+    }
+  }
+
+  const currentProperty = formData.properties[activePropertyIndex];
+  if (!currentProperty._id) {
+    showErrorPopup('Please save the property first before uploading images');
+    return;
+  }
+
+  const uploadFormData = new FormData();
+  files.forEach(file => uploadFormData.append('images', file));
+
+  try {
+    setIsUploading(true);
+    setUploadProgress(0);
     
-    for (const file of files) {
-      if (!validTypes.includes(file.type)) {
-        showErrorPopup('Only JPG, PNG, and GIF images are allowed');
-        return;
-      }
-      if (file.size > maxSize) {
-        showErrorPopup('Image size must be less than 5MB');
-        return;
-      }
-    }
-
-    const uploadFormData = new FormData();
-    files.forEach(file => uploadFormData.append('images', file));
-
-    try {
-      setIsUploading(true);
-      setUploadProgress(0);
-      
-      const response = await axios.post(
-        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images`,
-        uploadFormData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${userData.token}`
-          },
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setUploadProgress(percentCompleted);
-          }
+    const response = await axios.post(
+      `${API_URL}/properties/${currentProperty._id}/images`,
+      uploadFormData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${userData.token}`
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setUploadProgress(percentCompleted);
         }
-      );
+      }
+    );
 
-      setFormData(prev => {
-        const updatedPropertyDetails = [...prev.propertyDetails];
-        updatedPropertyDetails[activePropertyIndex].images = response.data.data;
-        return { ...prev, propertyDetails: updatedPropertyDetails };
-      });
-    } catch (error) {
-      console.error('Upload failed:', error);
-      showErrorPopup('Image upload failed: ' + (error.response?.data?.message || error.message));
-    } finally {
-      setIsUploading(false);
-    }
-  };
+    // Get the publicIds of existing images to check for duplicates
+    const existingPublicIds = new Set(
+      currentProperty.images.map(img => img.publicId)
+    );
 
-  const handleDeleteImage = async (imageId) => {
+    // Filter out any duplicates from the response
+    const newImages = response.data.data.filter(
+      img => !existingPublicIds.has(img.publicId)
+    );
+
+    // Only add truly new images
+    setFormData(prev => {
+      const updatedProperties = [...prev.properties];
+      updatedProperties[activePropertyIndex] = {
+        ...updatedProperties[activePropertyIndex],
+        images: [
+          ...updatedProperties[activePropertyIndex].images,
+          ...newImages
+        ]
+      };
+      return { ...prev, properties: updatedProperties };
+    });
+
+  } catch (error) {
+    console.error('Upload failed:', error);
+    showErrorPopup('Image upload failed: ' + (error.response?.data?.error || error.message));
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+  const handleDeleteImage = async (publicId) => {
     if (!window.confirm('Are you sure you want to delete this image?')) return;
+
+    const currentProperty = formData.properties[activePropertyIndex];
+    if (!currentProperty._id) {
+      showErrorPopup('Property not saved yet');
+      return;
+    }
 
     try {
       await axios.delete(
-        `${API_URL}/customers/${customerData._id}/propertyDetails/${activePropertyIndex}/images/${imageId}`,
+        `${API_URL}/properties/${currentProperty._id}/images/${encodeURIComponent(publicId)}`,
         { headers: { Authorization: `Bearer ${userData.token}` } }
       );
 
       setFormData(prev => {
-        const updatedPropertyDetails = [...prev.propertyDetails];
-        updatedPropertyDetails[activePropertyIndex].images = 
-          updatedPropertyDetails[activePropertyIndex].images.filter(img => img._id !== imageId);
-        return { ...prev, propertyDetails: updatedPropertyDetails };
+        const updatedProperties = [...prev.properties];
+        updatedProperties[activePropertyIndex].images = 
+          updatedProperties[activePropertyIndex].images.filter(img => img.publicId !== publicId);
+        return { ...prev, properties: updatedProperties };
       });
     } catch (error) {
       console.error('Delete error:', error);
@@ -927,129 +1004,229 @@ const CustomerDetails = ({ onNext, onBack }) => {
   };
 
   const handlePropertyChange = (index, field, value) => {
-  const processedValue = field === 'size' ? 
-    (value === '' ? '' : Number(value)) : 
-    value;
+    const processedValue = field === 'size.value' ? 
+      (value === '' ? '' : Number(value)) : 
+      value;
 
-  setFormData(prev => {
-    const updatedPropertyDetails = [...prev.propertyDetails];
-    if (field.includes('.')) {
-      const [parent, child] = field.split('.');
-      if (!updatedPropertyDetails[index][parent]) {
-        updatedPropertyDetails[index][parent] = {};
+    setFormData(prev => {
+      const updatedProperties = [...prev.properties];
+      if (field.includes('.')) {
+        const [parent, child] = field.split('.');
+        if (!updatedProperties[index][parent]) {
+          updatedProperties[index][parent] = {};
+        }
+        updatedProperties[index][parent][child] = processedValue;
+      } else {
+        updatedProperties[index][field] = processedValue;
       }
-      updatedPropertyDetails[index][parent][child] = processedValue;
+      return { ...prev, properties: updatedProperties };
+    });
+
+    let error = '';
+    if (field.startsWith('address.')) {
+      const addressField = field.split('.')[1];
+      error = validateField(addressField, processedValue, true);
+      setErrors(prev => {
+        const newErrors = {...prev};
+        if (!newErrors.properties[index]) {
+          newErrors.properties[index] = {
+            name: '',
+            address: { street: '', city: '', state: '', zipCode: '' },
+            size: '',
+            accessInstructions: '',
+            specialRequirements: ''
+          };
+        }
+        newErrors.properties[index].address[addressField] = error;
+        return newErrors;
+      });
     } else {
-      updatedPropertyDetails[index][field] = processedValue;
+      error = validateField(field, processedValue);
+      setErrors(prev => {
+        const newErrors = {...prev};
+        if (!newErrors.properties[index]) {
+          newErrors.properties[index] = {
+            name: '',
+            address: { street: '', city: '', state: '', zipCode: '' },
+            size: '',
+            accessInstructions: '',
+            specialRequirements: ''
+          };
+        }
+        newErrors.properties[index][field] = error;
+        return newErrors;
+      });
     }
-    return { ...prev, propertyDetails: updatedPropertyDetails };
-  });
+  };
 
-  let error = '';
-  if (field.startsWith('propertyAddress.')) {
-    const addressField = field.split('.')[1];
-    error = validateField(addressField, processedValue, true);
-    setErrors(prev => {
-      const newErrors = {...prev};
-      if (!newErrors.propertyDetails[index]) {
-        newErrors.propertyDetails[index] = {
+  const addNewProperty = () => {
+    setFormData(prev => ({
+      ...prev,
+      properties: [
+        ...prev.properties,
+        {
+          name: `Property ${prev.properties.length + 1}`,
+          address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'USA'
+          },
+          size: {
+            value: '',
+            unit: 'sqft'
+          },
+          propertyType: 'residential',
+          images: [],
+          features: {
+            hasFrontYard: true,
+            hasBackYard: true,
+            hasTrees: false,
+            hasGarden: false,
+            hasSprinklerSystem: false,
+            // hasPool: false,
+            // hasDeck: false,
+            // hasPatio: false,
+            // hasFence: false,
+            // hasIrrigation: false
+          },
+          accessInstructions: '',
+          specialRequirements: ''
+        }
+      ]
+    }));
+
+    setErrors(prev => ({
+      ...prev,
+      properties: [
+        ...prev.properties,
+        {
           name: '',
-          propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+          address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: ''
+          },
           size: '',
-          accessInstructions: ''
-        };
-      }
-      newErrors.propertyDetails[index].propertyAddress[addressField] = error;
-      return newErrors;
-    });
-  } else {
-    error = validateField(field, processedValue);
-    setErrors(prev => {
-      const newErrors = {...prev};
-      if (!newErrors.propertyDetails[index]) {
-        newErrors.propertyDetails[index] = {
-          name: '',
-          propertyAddress: { street: '', city: '', state: '', zipCode: '' },
-          size: '',
-          accessInstructions: ''
-        };
-      }
-      newErrors.propertyDetails[index][field] = error;
-      return newErrors;
-    });
-  }
-};
+          accessInstructions: '',
+          specialRequirements: ''
+        }
+      ]
+    }));
 
- const addNewProperty = () => {
-  setFormData(prev => ({
-    ...prev,
-    propertyDetails: [
-      ...prev.propertyDetails,
-      {
-        name: `Property ${prev.propertyDetails.length + 1}`,
-        propertyAddress: {
-          street: '',
-          city: '',
-          state: '',
-          zipCode: '',
-          country: 'USA'
-        },
-        size: '',
-        images: [],
-        features: {
-          hasFrontYard: true,
-          hasBackYard: true,
-          hasTrees: false,
-          hasGarden: false,
-          hasSprinklerSystem: false
-        },
-        accessInstructions: ''
-      }
-    ]
-  }));
+    setActivePropertyIndex(formData.properties.length);
+  };
 
-  setErrors(prev => ({
-    ...prev,
-    propertyDetails: [
-      ...prev.propertyDetails,
-      {
-        name: '',
-        propertyAddress: {
-          street: '',
-          city: '',
-          state: '',
-          zipCode: ''
-        },
-        size: '',
-        accessInstructions: ''
-      }
-    ]
-  }));
-
-  setActivePropertyIndex(formData.propertyDetails.length);
-};
-
-
-  const removeProperty = (index) => {
-    if (formData.propertyDetails.length <= 1) {
+  const removeProperty = async (index) => {
+    if (formData.properties.length <= 1) {
       showErrorPopup('You must have at least one property');
       return;
     }
+
+    const propertyToRemove = formData.properties[index];
+    
+    // If property has an ID, delete it from backend
+    if (propertyToRemove._id) {
+      try {
+        await axios.delete(
+          `${API_URL}/properties/${propertyToRemove._id}`,
+          { headers: { Authorization: `Bearer ${userData.token}` } }
+        );
+      } catch (error) {
+        console.error('Failed to delete property:', error);
+        showErrorPopup('Failed to delete property from server');
+        return;
+      }
+    }
     
     setFormData(prev => {
-      const updatedPropertyDetails = [...prev.propertyDetails];
-      updatedPropertyDetails.splice(index, 1);
-      return { ...prev, propertyDetails: updatedPropertyDetails };
+      const updatedProperties = [...prev.properties];
+      updatedProperties.splice(index, 1);
+      return { ...prev, properties: updatedProperties };
     });
 
     setErrors(prev => {
       const updatedErrors = {...prev};
-      updatedErrors.propertyDetails.splice(index, 1);
+      updatedErrors.properties.splice(index, 1);
       return updatedErrors;
     });
     
     if (index === activePropertyIndex) {
       setActivePropertyIndex(Math.max(0, activePropertyIndex - 1));
+    }
+  };
+
+  const saveProperty = async (index) => {
+    const property = formData.properties[index];
+    
+    // Validate property
+    const nameError = validateField('name', property.name);
+    const sizeError = validateField('size', property.size.value);
+    
+    ['street', 'city', 'state', 'zipCode'].forEach(field => {
+      const error = validateField(field, property.address[field], true);
+      if (error) {
+        showErrorPopup(`Please fix validation errors for ${field}`);
+        return;
+      }
+    });
+
+    if (nameError || sizeError) {
+      showErrorPopup('Please fix validation errors');
+      return;
+    }
+
+    try {
+      const propertyData = {
+  name: property.name,
+  address: property.address,
+  size: property.size,
+  propertyType: property.propertyType,
+  features: {
+    hasFrontYard: property.features.hasFrontYard,
+    hasBackYard: property.features.hasBackYard,
+    hasTrees: property.features.hasTrees,
+    hasGarden: property.features.hasGarden,
+    hasSprinklerSystem: property.features.hasSprinklerSystem
+  },
+  accessInstructions: property.accessInstructions,
+  specialRequirements: property.specialRequirements
+};
+
+      let response;
+      if (property._id) {
+        // Update existing property
+        response = await axios.put(
+          `${API_URL}/properties/${property._id}`,
+          propertyData,
+          { headers: { Authorization: `Bearer ${userData.token}` } }
+        );
+      } else {
+        // Create new property
+        response = await axios.post(
+          `${API_URL}/properties`,
+          propertyData,
+          { headers: { Authorization: `Bearer ${userData.token}` } }
+        );
+      }
+
+      // Update the property with the response data
+      setFormData(prev => {
+        const updatedProperties = [...prev.properties];
+        updatedProperties[index] = {
+          ...updatedProperties[index],
+          _id: response.data.data._id,
+          ...response.data.data
+        };
+        return { ...prev, properties: updatedProperties };
+      });
+
+      showErrorPopup('Property saved successfully!');
+    } catch (error) {
+      console.error('Failed to save property:', error);
+      showErrorPopup('Failed to save property: ' + (error.response?.data?.error || error.message));
     }
   };
 
@@ -1063,24 +1240,28 @@ const CustomerDetails = ({ onNext, onBack }) => {
       if (error) isValid = false;
     });
 
-    formData.propertyDetails.forEach((property, index) => {
+    formData.properties.forEach((property, index) => {
       const nameError = validateField('name', property.name);
-      newErrors.propertyDetails[index].name = nameError;
+      newErrors.properties[index].name = nameError;
       if (nameError) isValid = false;
 
       ['street', 'city', 'state', 'zipCode'].forEach(field => {
-        const error = validateField(field, property.propertyAddress[field], true);
-        newErrors.propertyDetails[index].propertyAddress[field] = error;
+        const error = validateField(field, property.address[field], true);
+        newErrors.properties[index].address[field] = error;
         if (error) isValid = false;
       });
 
-      const sizeError = validateField('size', property.size);
-      newErrors.propertyDetails[index].size = sizeError;
+      const sizeError = validateField('size', property.size.value);
+      newErrors.properties[index].size = sizeError;
       if (sizeError) isValid = false;
 
       const accessError = validateField('accessInstructions', property.accessInstructions);
-      newErrors.propertyDetails[index].accessInstructions = accessError;
+      newErrors.properties[index].accessInstructions = accessError;
       if (accessError) isValid = false;
+
+      const requirementsError = validateField('specialRequirements', property.specialRequirements);
+      newErrors.properties[index].specialRequirements = requirementsError;
+      if (requirementsError) isValid = false;
     });
 
     setErrors(newErrors);
@@ -1088,82 +1269,58 @@ const CustomerDetails = ({ onNext, onBack }) => {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!validateForm()) {
-    showErrorPopup('Please fix all validation errors before submitting');
-    return;
-  }
-
-  try {
-    // Create a clean data object without any undefined values
-    const dataToSend = {
-      address: {
-        street: formData.address.street || '',
-        city: formData.address.city || '',
-        state: formData.address.state || '',
-        zipCode: formData.address.zipCode || '',
-        country: formData.address.country || 'USA'
-      },
-      propertyDetails: formData.propertyDetails.map(property => ({
-        name: property.name || '',
-        propertyAddress: {
-          street: property.propertyAddress.street || '',
-          city: property.propertyAddress.city || '',
-          state: property.propertyAddress.state || '',
-          zipCode: property.propertyAddress.zipCode || '',
-          country: property.propertyAddress.country || 'USA'
-        },
-        size: property.size || 0,
-        images: property.images || [],
-        features: {
-          hasFrontYard: property.features?.hasFrontYard ?? true,
-          hasBackYard: property.features?.hasBackYard ?? true,
-          hasTrees: property.features?.hasTrees ?? false,
-          hasGarden: property.features?.hasGarden ?? false,
-          hasSprinklerSystem: property.features?.hasSprinklerSystem ?? false
-        },
-        accessInstructions: property.accessInstructions || ''
-      })),
-      notificationPreferences: {
-        email: formData.notificationPreferences.email ?? true,
-        sms: formData.notificationPreferences.sms ?? false
-      },
-      notes: formData.notes || ''
-    };
-
-    await axios.put(
-      `${API_URL}/customers/me`,
-      dataToSend,
-      { headers: { Authorization: `Bearer ${userData.token}` } }
-    );
-
-    updateCurrentBooking({
-      ...currentBooking,
-      propertyDetails: formData.propertyDetails,
-      notes: formData.notes
-    });
+    e.preventDefault();
     
-    onNext();
-  } catch (error) {
-    console.error('Failed to save customer details:', error);
-    showErrorPopup('Failed to save details. Please try again.');
-  }
-};
+    if (!validateForm()) {
+      showErrorPopup('Please fix all validation errors before submitting');
+      return;
+    }
+
+    try {
+      // Save all properties first
+      for (let i = 0; i < formData.properties.length; i++) {
+        const property = formData.properties[i];
+        if (!property._id) {
+          await saveProperty(i);
+        }
+      }
+
+      // Update customer address
+      await axios.put(
+        `${API_URL}/customers/me`,
+        {
+          address: formData.address,
+          notificationPreferences: formData.notificationPreferences
+        },
+        { headers: { Authorization: `Bearer ${userData.token}` } }
+      );
+
+      updateCurrentBooking({
+        ...currentBooking,
+        properties: formData.properties,
+        notes: formData.notes
+      });
+      
+      onNext();
+    } catch (error) {
+      console.error('Failed to save details:', error);
+      showErrorPopup('Failed to save details. Please try again.');
+    }
+  };
 
   if (!customerData) return <div>Loading...</div>;
 
-  const currentProperty = formData.propertyDetails[activePropertyIndex];
-  const currentErrors = errors.propertyDetails[activePropertyIndex] || {
+  const currentProperty = formData.properties[activePropertyIndex];
+  const currentErrors = errors.properties[activePropertyIndex] || {
     name: '',
-    propertyAddress: { street: '', city: '', state: '', zipCode: '' },
+    address: { street: '', city: '', state: '', zipCode: '' },
     size: '',
-    accessInstructions: ''
+    accessInstructions: '',
+    specialRequirements: ''
   };
 
   return (
     <div className="py-8 relative">
-      {/* Validation Error Popup */}
       {showValidationPopup && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow-lg max-w-xs md:max-w-md flex items-start">
@@ -1192,7 +1349,6 @@ const CustomerDetails = ({ onNext, onBack }) => {
       <h2 className="text-2xl font-bold mb-6">Customer Details</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Personal Details Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Personal Information</h3>
             <div>
@@ -1225,7 +1381,6 @@ const CustomerDetails = ({ onNext, onBack }) => {
               />
             </div>
 
-            {/* User's Personal Address */}
             <h3 className="text-lg font-medium mt-4">Your Address</h3>
             {['street', 'city', 'state', 'zipCode'].map((field) => (
               <div key={`personal-${field}`}>
@@ -1247,11 +1402,10 @@ const CustomerDetails = ({ onNext, onBack }) => {
             ))}
           </div>
 
-          {/* Properties Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">
-                Properties ({formData.propertyDetails.length})
+                Properties ({formData.properties.length})
               </h3>
               <button
                 type="button"
@@ -1262,9 +1416,8 @@ const CustomerDetails = ({ onNext, onBack }) => {
               </button>
             </div>
 
-            {/* Property Navigation */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {formData.propertyDetails.map((property, index) => (
+              {formData.properties.map((property, index) => (
                 <button
                   key={index}
                   type="button"
@@ -1280,21 +1433,29 @@ const CustomerDetails = ({ onNext, onBack }) => {
               ))}
             </div>
 
-            {/* Current Property Form */}
             <div className="space-y-4 border-t pt-4">
               <div className="flex justify-between items-center">
                 <h4 className="text-md font-medium">
                   {currentProperty?.name || ''} Details
                 </h4>
-                {formData.propertyDetails.length > 1 && (
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => removeProperty(activePropertyIndex)}
-                    className="text-sm text-red-600"
+                    onClick={() => saveProperty(activePropertyIndex)}
+                    className="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded"
                   >
-                    Remove Property
+                    Save Property
                   </button>
-                )}
+                  {formData.properties.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeProperty(activePropertyIndex)}
+                      className="text-sm text-red-600"
+                    >
+                      Remove Property
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div>
@@ -1316,6 +1477,24 @@ const CustomerDetails = ({ onNext, onBack }) => {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                <select
+                  className="w-full px-4 py-2 border rounded-md border-gray-300"
+                  value={currentProperty?.propertyType}
+                  onChange={(e) => handlePropertyChange(
+                    activePropertyIndex,
+                    'propertyType',
+                    e.target.value
+                  )}
+                >
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="industrial">Industrial</option>
+                  <option value="agricultural">Agricultural</option>
+                </select>
+              </div>
+
               <h4 className="text-md font-medium">Property Address</h4>
               {['street', 'city', 'state', 'zipCode'].map((field) => (
                 <div key={`property-${field}`}>
@@ -1325,47 +1504,64 @@ const CustomerDetails = ({ onNext, onBack }) => {
                   <input
                     type="text"
                     className={`w-full px-4 py-2 border rounded-md ${
-                      currentErrors.propertyAddress[field] ? 'border-red-500' : 'border-gray-300'
+                      currentErrors.address[field] ? 'border-red-500' : 'border-gray-300'
                     }`}
-                    value={currentProperty?.propertyAddress?.[field] || ''}
+                    value={currentProperty?.address?.[field] || ''}
                     onChange={(e) => handlePropertyChange(
                       activePropertyIndex,
-                      `propertyAddress.${field}`,
+                      `address.${field}`,
                       e.target.value
                     )}
                   />
-                  {currentErrors.propertyAddress[field] && (
+                  {currentErrors.address[field] && (
                     <p className="mt-1 text-sm text-red-600">
-                      {currentErrors.propertyAddress[field]}
+                      {currentErrors.address[field]}
                     </p>
                   )}
                 </div>
               ))}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Size (sq ft)</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  className={`w-full px-4 py-2 border rounded-md ${
-                    currentErrors.size ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  value={currentProperty?.size || ''}
-                  onChange={(e) => handlePropertyChange(
-                    activePropertyIndex,
-                    'size',
-                    e.target.value
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    className={`w-full px-4 py-2 border rounded-md ${
+                      currentErrors.size ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    value={currentProperty?.size?.value || ''}
+                    onChange={(e) => handlePropertyChange(
+                      activePropertyIndex,
+                      'size.value',
+                      e.target.value
+                    )}
+                  />
+                  {currentErrors.size && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {currentErrors.size}
+                    </p>
                   )}
-                />
-                {currentErrors.size && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {currentErrors.size}
-                  </p>
-                )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                  <select
+                    className="w-full px-4 py-2 border rounded-md border-gray-300"
+                    value={currentProperty?.size?.unit}
+                    onChange={(e) => handlePropertyChange(
+                      activePropertyIndex,
+                      'size.unit',
+                      e.target.value
+                    )}
+                  >
+                    <option value="sqft">Square Feet</option>
+                    <option value="acres">Acres</option>
+                    <option value="sqm">Square Meters</option>
+                  </select>
+                </div>
               </div>
 
-              {/* Property Images Upload */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Property Images (Multiple)
@@ -1374,7 +1570,7 @@ const CustomerDetails = ({ onNext, onBack }) => {
                   type="file"
                   accept="image/*"
                   onChange={handlePropertyImageUpload}
-                  disabled={isUploading}
+                  disabled={isUploading || !currentProperty._id}
                   multiple
                   className="w-full text-sm text-gray-500
                     file:mr-4 file:py-2 file:px-4
@@ -1383,6 +1579,11 @@ const CustomerDetails = ({ onNext, onBack }) => {
                     file:bg-green-50 file:text-green-700
                     hover:file:bg-green-100"
                 />
+                {!currentProperty._id && (
+                  <p className="text-sm text-orange-600 mt-1">
+                    Save the property first to upload images
+                  </p>
+                )}
                 {isUploading && (
                   <div className="mt-2">
                     <div className="w-full bg-gray-200 rounded-full h-2.5">
@@ -1398,13 +1599,12 @@ const CustomerDetails = ({ onNext, onBack }) => {
                 )}
               </div>
 
-              {/* Current Images Gallery */}
               {currentProperty?.images?.length > 0 && (
                 <div className="mt-4">
                   <h4 className="text-sm font-medium text-gray-700 mb-2">Current Images:</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {currentProperty?.images.map((image) => (
-                      <div key={image._id || image.url} className="relative group">
+                      <div key={image.publicId || image.url} className="relative group">
                         <div className="aspect-square bg-gray-100 rounded-md overflow-hidden">
                           <img 
                             src={image.url}
@@ -1418,7 +1618,7 @@ const CustomerDetails = ({ onNext, onBack }) => {
                         </div>
                         <button
                           type="button"
-                          onClick={() => handleDeleteImage(image._id)}
+                          onClick={() => handleDeleteImage(image.publicId)}
                           className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                           aria-label="Delete image"
                         >
@@ -1444,7 +1644,11 @@ const CustomerDetails = ({ onNext, onBack }) => {
                     'accessInstructions',
                     e.target.value
                   )}
+                  maxLength={500}
                 />
+                <p className="text-xs text-gray-500 text-right">
+                  {(currentProperty?.accessInstructions || '').length}/500 characters
+                </p>
                 {currentErrors.accessInstructions && (
                   <p className="mt-1 text-sm text-red-600">
                     {currentErrors.accessInstructions}
@@ -1452,30 +1656,55 @@ const CustomerDetails = ({ onNext, onBack }) => {
                 )}
               </div>
 
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Special Requirements</label>
+                <textarea
+                  className={`w-full px-4 py-2 border rounded-md ${
+                    currentErrors.specialRequirements ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  value={currentProperty?.specialRequirements || ''}
+                  onChange={(e) => handlePropertyChange(
+                    activePropertyIndex,
+                    'specialRequirements',
+                    e.target.value
+                  )}
+                  maxLength={1000}
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  {(currentProperty?.specialRequirements || '').length}/1000 characters
+                </p>
+                {currentErrors.specialRequirements && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {currentErrors.specialRequirements}
+                  </p>
+                )}
+              </div>
+
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Property Features</label>
-                {Object.keys(currentProperty?.features || {}).map((feature) => (
-                  <label key={feature} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={currentProperty?.features[feature]}
-                      onChange={(e) => handlePropertyChange(
-                        activePropertyIndex,
-                        `features.${feature}`,
-                        e.target.checked
-                      )}
-                      className="h-4 w-4 text-green-600 mr-2"
-                    />
-                    <span className="capitalize">
-                      {feature.replace(/([A-Z])/g, ' $1').replace('has ', '')}
-                    </span>
-                  </label>
-                ))}
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.keys(currentProperty?.features || {}).map((feature) => (
+                    <label key={feature} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={currentProperty?.features[feature]}
+                        onChange={(e) => handlePropertyChange(
+                          activePropertyIndex,
+                          `features.${feature}`,
+                          e.target.checked
+                        )}
+                        className="h-4 w-4 text-green-600 mr-2"
+                      />
+                      <span className="capitalize text-sm">
+                        {feature.replace(/([A-Z])/g, ' $1').replace('has ', '')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Notification Preferences */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Notifications</h3>
             {['email', 'sms'].map((type) => (
@@ -1495,7 +1724,6 @@ const CustomerDetails = ({ onNext, onBack }) => {
             ))}
           </div>
 
-          {/* Special Instructions */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Special Instructions</h3>
             <textarea

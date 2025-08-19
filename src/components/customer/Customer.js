@@ -186,130 +186,88 @@ const [currentImageIndex, setCurrentImageIndex] = useState(0);
   // Fetch user data when userData or contextLoading changes
   useEffect(() => {
     const fetchUserData = async () => {
-      try {
-        // Only fetch if we have userData with token
-        if (!userData?.token) {
-          setLoading(false);
-          return;
-        }
+  try {
+    if (!userData?.token) {
+      setLoading(false);
+      return;
+    }
 
-        const response = await axios.get(`${API_URL}/customers/me`, {
-          headers: {
-            Authorization: `Bearer ${userData.token}`,
-          },
-        });
+    // Fetch customer data
+    const customerResponse = await axios.get(`${API_URL}/customers/me`, {
+      headers: {
+        Authorization: `Bearer ${userData.token}`,
+      },
+    });
+    const customerData = customerResponse.data.data;
 
-        const customerData = response.data.data;
+    // Fetch properties for this customer
+    const propertiesResponse = await axios.get(`${API_URL}/properties`, {
+      headers: {
+        Authorization: `Bearer ${userData.token}`,
+      },
+    });
+    const properties = propertiesResponse.data.data;
 
-        let formattedAddress = "";
-        if (
-          typeof customerData.address === "object" &&
-          customerData.address !== null
-        ) {
-          const addressParts = [];
-          if (customerData.address?.street)
-            addressParts.push(customerData.address.street);
-          if (customerData.address?.city)
-            addressParts.push(customerData.address.city);
-          if (customerData.address?.state)
-            addressParts.push(customerData.address.state);
-          if (customerData.address?.zipCode)
-            addressParts.push(customerData.address.zipCode);
-          if (customerData.address?.country)
-            addressParts.push(customerData.address.country);
-          formattedAddress = addressParts.join(", ");
-        } else if (typeof customerData.address === "string") {
-          formattedAddress = customerData.address;
-        }
+    // Format address
+    let formattedAddress = "";
+    if (typeof customerData.address === "object" && customerData.address !== null) {
+      const addressParts = [];
+      if (customerData.address?.street) addressParts.push(customerData.address.street);
+      if (customerData.address?.city) addressParts.push(customerData.address.city);
+      if (customerData.address?.state) addressParts.push(customerData.address.state);
+      if (customerData.address?.zipCode) addressParts.push(customerData.address.zipCode);
+      if (customerData.address?.country) addressParts.push(customerData.address.country);
+      formattedAddress = addressParts.join(", ");
+    } else if (typeof customerData.address === "string") {
+      formattedAddress = customerData.address;
+    }
 
-        const transformedUser = {
-          name: customerData.user?.name || "",
-          email: customerData.user?.email || "",
-          phone: customerData.user?.phone || "",
-          address: customerData.address || {},
-          formattedAddress: formattedAddress,
-          memberStatus: customerData.memberStatus || "Standard Member",
-          avatar: customerData.avatar || "/avatar.png",
-          propertyDetails: customerData.propertyDetails || [],
-          propertyDetails: customerData.propertyDetails || {
-            size: "",
-            features: {
-              hasFrontYard: false,
-              hasBackYard: false,
-              hasTrees: false,
-              hasGarden: false,
-              hasSprinklerSystem: false,
-            },
-            accessInstructions: "",
-          },
-          properties: customerData.properties || [
-            {
-              id: 1,
-              address: formattedAddress || "No address provided",
-              image: "/property.jpg",
-              sqft: customerData.propertyDetails?.size
-                ? `${customerData.propertyDetails.size} sq ft`
-                : "N/A",
-              tags: customerData.services || ["Lawn Care"],
-            },
-          ],
-          nextService: customerData.nextAppointment
-            ? {
-                type: customerData.nextAppointment.serviceType || "Service",
-                date: new Date(
-                  customerData.nextAppointment.date
-                ).toLocaleDateString("en-US", {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                }),
-                startTime: customerData.nextAppointment.startTime || "9:00 AM",
-                endTime: customerData.nextAppointment.endTime || "11:00 AM",
-                duration: customerData.nextAppointment.duration || "2 hours",
-              }
-            : null,
-          recentServices:
-            customerData.pastAppointments?.map((appointment, index) => ({
-              id: index + 1,
-              type: appointment.serviceType || "Service",
-              date: new Date(appointment.date).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "short",
-                day: "numeric",
-              }),
-              rating: appointment.rating || 5,
-              image: "/service.jpg",
-              completed: true,
-            })) || [],
-        };
-
-        setUser(transformedUser);
-        setFormData({
-          name: transformedUser.name,
-          email: transformedUser.email,
-          phone: transformedUser.phone,
-          address: transformedUser.address,
-          propertyDetails: transformedUser.propertyDetails,
-          servicePreferences: {
-            preferredDays: [],
-            preferredTimeOfDay: "Any",
-          },
-          notificationPreferences: {
-            email: false,
-            sms: false,
-            reminderDaysBefore: 0,
-          },
-          notes: "",
-        });
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching user data:", err);
-        setError(err.response?.data?.message || "Failed to fetch user data");
-        setLoading(false);
-      }
+    const transformedUser = {
+      name: customerData.user?.name || "",
+      email: customerData.user?.email || "",
+      phone: customerData.user?.phone || "",
+      address: customerData.address || {},
+      formattedAddress: formattedAddress,
+      memberStatus: customerData.memberStatus || "Standard Member",
+      avatar: customerData.avatar || "/avatar.png",
+      properties: properties.map(property => ({
+        _id: property._id,
+        name: property.name || `Property ${property._id}`,
+        address: property.address || formattedAddress,
+        size: property.size?.value ? `${property.size.value} ${property.size.unit}` : "N/A",
+        images: property.images || [],
+        features: property.features || {
+          hasFrontYard: false,
+          hasBackYard: false,
+          hasTrees: false,
+          hasGarden: false,
+          hasSprinklerSystem: false
+        },
+        accessInstructions: property.accessInstructions || "",
+        specialRequirements: property.specialRequirements || ""
+      })),
+      nextService: customerData.nextAppointment ? {
+        type: customerData.nextAppointment.serviceType || "Service",
+        date: new Date(customerData.nextAppointment.date).toLocaleDateString("en-US", {
+          weekday: "long",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }),
+        startTime: customerData.nextAppointment.startTime || "9:00 AM",
+        endTime: customerData.nextAppointment.endTime || "11:00 AM",
+        duration: customerData.nextAppointment.duration || "2 hours",
+      } : null
     };
 
+    setUser(transformedUser);
+    setLoading(false);
+  } catch (err) {
+    console.error("Error fetching user data:", err);
+    setError(err.response?.data?.message || "Failed to fetch user data");
+    setLoading(false);
+  }
+};
     // Only fetch if context is done loading and we have userData
     if (!contextLoading && userData) {
       fetchUserData();
@@ -540,13 +498,13 @@ const handleImageClick = (images, index = 0) => {
     </h2>
   </div>
   <div className="p-4">
-    {user.propertyDetails && user.propertyDetails.length > 0 ? (
+    {user?.properties?.length > 0 ? (
       <div className="space-y-6">
-        {user.propertyDetails.map((property, index) => (
-          <div key={index} className="border border-gray-100 rounded-lg overflow-hidden">
+        {user.properties.map((property, index) => (
+          <div key={property._id} className="border border-gray-100 rounded-lg overflow-hidden">
             {/* Property Images Carousel */}
             <div className="relative h-48 bg-gray-100">
-              {property.images && property.images.length > 0 ? (
+              {property.images.length > 0 ? (
                 <>
                   <div className="relative h-full w-full overflow-hidden">
                     <img
@@ -579,20 +537,18 @@ const handleImageClick = (images, index = 0) => {
             <div className="p-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="font-medium text-gray-900">{property.name || `Property ${index + 1}`}</h3>
-                  {property.propertyAddress && (
+                  <h3 className="font-medium text-gray-900">{property.name}</h3>
+                  {property.address && (
                     <p className="text-sm text-gray-600 mt-1">
-                      {[
-                        property.propertyAddress?.street,
-                        property.propertyAddress?.city,
-                        property.propertyAddress?.state,
-                        property.propertyAddress?.zipCode
-                      ].filter(Boolean).join(', ')}
+                      {typeof property.address === 'string' ? 
+                        property.address : 
+                        `${property.address.street}, ${property.address.city}, ${property.address.state} ${property.address.zipCode}`
+                      }
                     </p>
                   )}
                 </div>
                 <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                  {property.size ? `${property.size} sq ft` : 'Size not specified'}
+                  {property.size}
                 </span>
               </div>
 
@@ -603,16 +559,6 @@ const handleImageClick = (images, index = 0) => {
                     Features
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {property.features.hasGarden && (
-                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
-                        Garden
-                      </span>
-                    )}
-                    {property.features.hasSprinklerSystem && (
-                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
-                        Sprinkler System
-                      </span>
-                    )}
                     {property.features.hasFrontYard && (
                       <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
                         Front Yard
@@ -626,6 +572,16 @@ const handleImageClick = (images, index = 0) => {
                     {property.features.hasTrees && (
                       <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
                         Trees
+                      </span>
+                    )}
+                    {property.features.hasGarden && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Garden
+                      </span>
+                    )}
+                    {property.features.hasSprinklerSystem && (
+                      <span className="text-xs bg-green-50 text-green-700 px-2 py-1 rounded">
+                        Sprinkler System
                       </span>
                     )}
                   </div>
@@ -642,13 +598,15 @@ const handleImageClick = (images, index = 0) => {
                 </div>
               )}
 
-              <button 
-                className="w-full mt-4 text-green-600 hover:text-green-800 font-medium text-sm flex items-center justify-center"
-                onClick={() => handleImageClick(property.images)}
-              >
-                <span>View All Images</span>
-                <ChevronRight size={16} className="ml-1" />
-              </button>
+              {property.images.length > 0 && (
+                <button 
+                  className="w-full mt-4 text-green-600 hover:text-green-800 font-medium text-sm flex items-center justify-center"
+                  onClick={() => handleImageClick(property.images)}
+                >
+                  <span>View All Images</span>
+                  <ChevronRight size={16} className="ml-1" />
+                </button>
+              )}
             </div>
           </div>
         ))}
@@ -659,12 +617,12 @@ const handleImageClick = (images, index = 0) => {
           <MapPin className="text-green-600" size={24} />
         </div>
         <h3 className="text-gray-500 mb-2">No properties added yet</h3>
-        <Link 
+        {/* <Link 
           href="/customers/add-property" 
           className="text-green-600 hover:text-green-800 font-medium"
         >
           Add Your First Property
-        </Link>
+        </Link> */}
       </div>
     )}
   </div>
