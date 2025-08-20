@@ -42,8 +42,10 @@ export default function Home() {
   return (
     <>
       <Hero />
-      {showTenantContent && <ServicesGrid />}
-      {showTenantContent && <Portfolio />}
+      {/* {showTenantContent && <ServicesGrid />}
+      {showTenantContent && <Portfolio />} */}
+      <ServicesGrid />
+     <Portfolio />
       <Testimonials />
       <ContactForm />
       {/* <Footer/> */}
