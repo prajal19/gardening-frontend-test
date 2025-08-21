@@ -390,6 +390,7 @@ import {
   Settings, Phone, Mail, Calendar, ChevronRight, 
   Leaf
 } from 'lucide-react';
+import LanguageSwitcher from '../ui/LanguageSwitcher';
 
 const Header = () => {
   const router = useRouter();
@@ -542,8 +543,12 @@ const Header = () => {
               ))}
             </nav>
 
-            {/* Right Side - CTA and Profile */}
+            {/* Right Side - Language, CTA and Profile */}
             <div className="flex items-center space-x-4">
+              {/* Language Switcher */}
+              <div className="hidden md:block">
+                <LanguageSwitcher />
+              </div>
               {/* Book Now Button - Desktop */}
               {/* <div className="hidden md:block">
                 <button

@@ -5,6 +5,7 @@ import { TenantProvider } from '../contexts/TenantContext';
 import LayoutWrapper from '../components/layout/LayoutWrapper'; // client component
 import { Toaster } from 'react-hot-toast';
 import Footer from '@/components/layout/Footer';
+import GoogleTranslateInitializer from '@/components/ui/GoogleTranslateInitializer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
             </LayoutWrapper>
           </DashboardProvider>
         </TenantProvider>
+        <GoogleTranslateInitializer />
         <Toaster position="top-center" />
         {/* <Footer/> */}
       </body>
